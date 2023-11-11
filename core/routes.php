@@ -7,7 +7,7 @@ function getController($controller) {
 
     if(!is_file($fileController)){ // Si no es un archivo
         // Cargar el controlador principal
-        $fileController = "controllers/" . PRINCIPAL_CONTROLLER . "Controller.php";
+        $fileController = "controllers/" . PRINCIPAL_CONTROLLER . ".php";
     }
 
 
