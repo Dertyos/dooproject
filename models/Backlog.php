@@ -30,7 +30,7 @@ class Backlog {
         $this->db->query($sql);
     }
 
-    public function getBacklog($id) {
+    public function getBacklog($idScrumId) {
         $sql = "SELECT * FROM backlog WHERE id = $id";
         $result = $this->db->query($sql);
         $record = $result->fetch_assoc();
