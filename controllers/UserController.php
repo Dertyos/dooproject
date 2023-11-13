@@ -3,18 +3,23 @@
 class UserController {
 
     public function __construct() {
-        require_once "models/User.php";
+        require_once "models/Developer.php";
         session_start();
     }
 
     public function register() {
-        $documentNumber = $_POST['documentNumber'];
+        
         $name = $_POST['name'];
         $email = $_POST['email'];
+        $phone = $_POST['phone'];
+        $rol = $_POST['rol'];
+        $scrumTeamId = $_POST['scrumTeamId']; 
+        $documentNumber = $_POST['documentNumber'];
         $password = $_POST['password'];
 
-        $user = new User();
-        $user->store($documentNumber, $name, $email, $password);
+
+        $user = new Developer();
+        $user->store($name, $email, $phone, $rol, $scrumTeamId, $documentNumber, $password);
 
         // Redirect to login
         header('Location: index.php?controller=user&action=seeLogin');
@@ -34,8 +39,8 @@ class UserController {
         $documentNumber = $_POST['documentNumber'];
         $password = $_POST['password'];
 
-        $userModel = new User();
-        $user = $userModel->queryUser($documentNumber);
+        $userModel = new Developer();
+        $user = $userModel->getDeveloper($documentNumber);
 
         // var_dump($user);
 

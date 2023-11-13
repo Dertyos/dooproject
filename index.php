@@ -1,10 +1,11 @@
 <?php 
 
-    require_once "config/config.php";
+    require_once "settings/settings.php";
     require_once "core/routes.php";
 
-    require_once "config/database.php";
-    require_once "controllers/ProyectoController.php";
+    require_once "settings/database.php";
+    require_once "controllers/HomeController.php";
+    require_once "controllers/UserController.php";
 
     if(isset($_GET['controller'])) {
         $controller = getController($_GET['controller']);

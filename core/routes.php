@@ -2,7 +2,7 @@
 
 function getController($controller) {
 
-    $nameController = ucwords($controller) . "Controller";
+    $nameController = ucwords($controller);
     $fileController = "controllers/$nameController.php";
 
     if(!is_file($fileController)){ // Si no es un archivo
