@@ -29,7 +29,7 @@ class SprintController {
 
         // Además, obtén las tareas asociadas al sprint
         $tasks = $sprintModel->getSprintTasks($id);
-        // Puedes pasar las tareas a la vista para mostrarlas en el contexto del sprint.
+        
     }
 
     public function create() {

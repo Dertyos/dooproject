@@ -6,7 +6,7 @@ private $db; // database connection
 private $sprints; // array of sprints
 
 public function __construct() {
-    $this->db = Conexion::conectar(); // connect to database
+    $this->db = connection::connect(); // connect to database
     $this->sprints = array(); // initialize sprints array
 }
 

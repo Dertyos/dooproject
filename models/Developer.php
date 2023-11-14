@@ -24,25 +24,27 @@ class Developer {
     }
 
     public function insert($name, $email, $phone, $rol, $scrumTeamId, $documentNumber, $password) {
-        $sql = "INSERT INTO developer(name, email, phone, rol, scrumTeamId, documentNumber, password )
-                VALUES('$name', '$email', '$phone', $'rol', $scrumTeamId, $'documentNumber', $'password')";
         
+        $password = password_hash($password, PASSWORD_BCRYPT);
+
+        $sql = "INSERT INTO developer(name, email, phone, rol, scrumTeamId, documentNumber, password)
+        VALUES ('$name', '$email', '$phone', '$rol', $scrumTeamId, '$documentNumber', '$password')";
         $this->db->query($sql);
     }
 
     public function getDeveloper($documentNumber) {
-        $sql = "SELECT developer.*, scrumTeam.name as scrumTeamName
-                FROM `developer` 
-                JOIN scrumTeam 
-                ON developer.scrumTeamId = scrumTeam.id 
-                WHERE developer.documentNumber = $documentNumber";
-        
-        $result = $this->db->query($sql);
-        $record = $result->fetch_assoc();
-        return $record;
+        $sql = "SELECT * FROM developer
+                WHERE documentNumber = '$documentNumber'";
+        $consult = $this->db->query($sql);
+        $devObject = $consult->fetch_assoc();
+        return $devObject;
     }
 
+
     public function update($id, $name, $email, $phone, $rol, $scrumTeamId, $documentNumber, $password) {
+        
+        $password = password_hash($password, PASSWORD_BCRYPT);
+
         $sql = "UPDATE developer
                 SET name = '$name', email = '$email', phone = '$phone', rol = 'rol', scrumTeamId = $scrumTeamId, documentNumber = '$documentNumber', password = '$password'
                 WHERE id = $id";

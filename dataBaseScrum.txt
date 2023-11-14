@@ -12,8 +12,8 @@ CREATE TABLE Backlog (
   id INT NOT NULL AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL,
   description VARCHAR(255) NOT NULL,
-  idScrumTeam INT NOT NULL,
-  FOREIGN KEY (idScrumTeam) REFERENCES ScrumTeam (id),
+  scrumTeamId INT NOT NULL,
+  FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id),
   PRIMARY KEY (id)
 );
 
@@ -25,8 +25,8 @@ CREATE TABLE Sprint (
   startDate DATE NOT NULL,
   endDate DATE NOT NULL,
   PRIMARY KEY (id),
-  idScrumTeam INT NOT NULL,
-  FOREIGN KEY (idScrumTeam) REFERENCES ScrumTeam (id)
+  scrumTeamId INT NOT NULL,
+  FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id)
 );
 
 -- Tabla Devs
@@ -34,10 +34,12 @@ CREATE TABLE Developer (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
-    phone VARCHAR(255) NOT NULL,
+    phone VARCHAR(10) NOT NULL,
     rol ENUM('Developer', 'ScrumMaster', 'ProductOwner') NOT NULL,
-    idScrumTeam INT NOT NULL,
-    FOREIGN KEY (idScrumTeam) REFERENCES ScrumTeam (id)
+    scrumTeamId INT NOT NULL,
+    documentNumber VARCHAR(10) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id)
 );
 
 -- Tabla Task
@@ -48,16 +50,16 @@ CREATE TABLE Task (
     priority INT NOT NULL,
     estimatedTime INT NOT NULL,
     status ENUM('pending', 'in_progress', 'completed') NOT NULL,
-    idBacklog INT,
-    idSprint INT,
-    idDeveloper INT,
-    idScrumTeam INT NOT NULL,
-    FOREIGN KEY (idScrumTeam) REFERENCES ScrumTeam (id),
-    FOREIGN KEY (idBacklog) REFERENCES Backlog (id),
-    FOREIGN KEY (idSprint) REFERENCES Sprint (id),
-    FOREIGN KEY (idDeveloper) REFERENCES Developer (id)
+    backlogId INT,
+    sprintId INT,
+    developerId INT,
+    scrumTeamId INT NOT NULL,
+    FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id),
+    FOREIGN KEY (backlogId) REFERENCES Backlog (id),
+    FOREIGN KEY (sprintId) REFERENCES Sprint (id),
+    FOREIGN KEY (developerId) REFERENCES Developer (id)
 );
 
 ALTER TABLE Task
 ADD CONSTRAINT task_backlog_or_sprint_fk
-CHECK (idBacklog IS NOT NULL OR idSprint IS NOT NULL);
+CHECK (backlogId IS NOT NULL OR sprintId IS NOT NULL);
