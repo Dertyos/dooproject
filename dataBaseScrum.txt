@@ -10,8 +10,8 @@ CREATE TABLE ScrumTeam (
 -- Tabla Backlog
 CREATE TABLE Backlog (
   id INT NOT NULL AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL,
-  description VARCHAR(255) NOT NULL,
+  name VARCHAR(255),
+  description VARCHAR(255),
   scrumTeamId INT NOT NULL,
   FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id),
   PRIMARY KEY (id)

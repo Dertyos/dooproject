@@ -42,6 +42,8 @@ class TaskController {
 
     // Guardando el registro
         $task = new Task();
+        $idDeveloper = 
+
         $task->insert($name, $description, $priority, $estimatedTime, $status, $idBacklog, $idSprint, $idDeveloper, $idScrumTeam);
 
     // Enviar a la vista del index

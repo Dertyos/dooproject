@@ -4,47 +4,39 @@ class BacklogController {
 
     public function __construct() {
         require_once "models/Backlog.php";
+        require_once "models/ScrumTeam.php";
+        require_once "models/Task.php";
         session_start();
     }
 
-    public function getBacklog($id) {
+    public function index() {
 
-        $backlogModel = new Backlog();
-        $backlog = $backlogModel->getBacklog($id);
+        $backlog = new Backlog();
+        $data['backlogs'] = $backlog->listar();
+        $data['titulo'] = "Backlog";
+        // Cargar la vista
+        require_once "views/Backlog/index.php";
+    }
 
+    public function show($scrumTeamId) {
+        $backlog = new Backlog();
+        $backlog = $backlog->getBacklog($scrumTeamId);
+        
+        $tasks = $backlog->getBacklogTasks($scrumTeamId);
+        
     }
 
     public function store() {
         // Almacena el nuevo backlog
-        $name = $_POST['name'];
-        $description = $_POST['description'];
+        $scrumTeamId = $_POST['scrumTeamId'];
 
         $backlogModel = new Backlog();
-        $backlogModel->insert($name, $description);
+        $backlogModel->insert($scrumTeamId);
 
         // Redirige al índice
-        header('Location: index.php?controller=backlog&action=index');
+        header('Location: index.php?controller=scrumteam&action=index');
     }
 
-    public function update($id) {
-        // Actualiza el backlog
-        $name = $_POST['name'];
-        $description = $_POST['description'];
 
-        $backlogModel = new Backlog();
-        $backlogModel->update($id, $name, $description);
 
-        // Redirige al índice
-        header('Location: index.php?controller=backlog&action=index');
-    }
-
-    public function delete($id) {
-        // Elimina el backlog
-        $backlogModel = new Backlog();
-        $backlogModel->delete($id);
-
-        // Redirige al índice
-        header('Location: index.php?controller=backlog&action=index');
-    }
-}
 ?>

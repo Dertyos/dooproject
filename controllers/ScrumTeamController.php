@@ -4,6 +4,8 @@ class ScrumTeamController {
 
     public function __construct() {
         require_once 'models/ScrumTeam.php';
+        require_once 'models/Sprint.php';
+        require_once 'models/Task.php';
     }
 
     public function index() {
@@ -46,7 +48,9 @@ class ScrumTeamController {
     // Visualizar la información de un registro
     public function view($id) {
         $scrumTeam = new ScrumTeam();
+        $sprint = new Sprint();
         $data['title'] = "ScrumTeam details";
+        $data['sprints'] = $sprint->list($id); // [
         $data['scrumTeam'] = $scrumTeam->getScrumTeam($id);
         require_once "views/scrumTeams/view.php";
     }
@@ -78,6 +82,21 @@ class ScrumTeamController {
         $this->index();
     }
 
+    public function getTasksBacklog($id) {
+        $backlog = new Backlog();
+        $tasks = new Task();
+        $data['backlog'] = $backlog->getBacklog($id);
+        $data['task'] = $tasks->getBacklogTasks($data['backlog']['id']);
+        return $data;
+    }
+
+    public function getTasksSprint($id) {
+        $sprint = new Sprint();
+        $tasks = new Task();
+        $data['sprint'] = $sprint->getSprint($id);
+        $data['task'] = $tasks->getSprintTasks($data['sprint']['id']);
+        return $data;
+    }
 }
 
 ?>

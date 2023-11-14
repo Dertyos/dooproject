@@ -30,20 +30,20 @@ class Task {
         $this->database->query($sql);
     }
 
-    public function getTask($id) {
-        $sql = "SELECT task.*, backlog.name as backlogName, sprint.name as sprintName, developer.name as developerName
-                FROM `task`
-                JOIN backlog
-                ON task.backlogId = backlog.id
-                JOIN sprint
-                ON task.sprintId = sprint.id
-                JOIN developer
-                ON task.developerId = developer.id
-                WHERE task.id = $id";
+    public function getTaskBacklog($backlogId) {
+        $sql = "SELECT * FROM taks
+                WHERE backlogId = '$backlogId'";
+        $consult = $this->db->query($sql);
+        $devObject = $consult->fetch_assoc();
+        return $devObject;
+    }
 
-        $result = $this->database->query($sql);
-        $record = $result->fetch_assoc();
-        return $record;
+    public function getTask($sprintId) {
+        $sql = "SELECT * FROM task
+                WHERE sprintId = '$sprintId'";
+        $consult = $this->db->query($sql);
+        $devObject = $consult->fetch_assoc();
+        return $devObject;
     }
 
     public function update($id, $name, $description, $priority, $estimated, $status, $backlogId, $sprintId, $developerId) {

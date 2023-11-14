@@ -31,20 +31,17 @@ public function insert($name, $description, $startDate, $endDate) { // insert a 
     $this->db->query($sql); // execute SQL query
 }
 
-public function getSprint($id) { // get a specific sprint by ID
-    $sql = "SELECT sprint.*, backlog.name as backlogName
-            FROM `sprint`
-            JOIN backlog
-            ON sprint.idBacklog = backlog.id
-            WHERE sprint.id = $id"; // SQL query to select a specific sprint by ID
-    $resultado = $this->db->query($sql); // execute SQL query
-    $registro = $resultado->fetch_assoc(); // get the first row of the result set
-    return $registro; // return the sprint data
+public function getSprint($scrumTeamId) {
+    $sql = "SELECT * FROM sprint
+            WHERE scrumTeamId = '$scrumTeamId'";
+    $consult = $this->db->query($sql);
+    $devObject = $consult->fetch_assoc();
+    return $devObject;
 }
 
 public function update($id, $name, $description, $startDate, $endDate) { // update a specific sprint
     $sql = "UPDATE sprint
-            SET nombre = '$name', descripcion = '$description', fechaInicio = '$startDate', fechaFin = '$endDate'
+            SET name = '$name', description = '$description', startDate = '$startDate', endDate = '$endDate'
             WHERE id = $id"; // SQL query to update a specific sprint
     $this->db->query($sql); // execute SQL query
 }

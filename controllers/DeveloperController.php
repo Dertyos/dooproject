@@ -21,7 +21,6 @@ class DeveloperController {
         $developer = new Developer();
         $developer->insert($name, $email, $phone, $rol, $scrumTeamId, $documentNumber, $password );
 
-    // Enviar a la vista del index
     header('Location: index.php?controller=developer&action=seeLogin');
     }
 
@@ -57,8 +56,8 @@ class DeveloperController {
             // Verify the password
             if(password_verify($password, $developer['password'])) {
                 $_SESSION["documentNumber"] = $developer['documentNumber'];
-                header("Location: index.php");
-                echo "La sesión está activa con el número de documento: " . $_SESSION['documentNumber'];
+                require_once "views/home/index.php";
+
             } else {
                 $data['title'] = "Login";
                 $data['error'] = "Incorrect password";
@@ -103,6 +102,7 @@ class DeveloperController {
     }
 
 }
+pu
 
 
 ?>

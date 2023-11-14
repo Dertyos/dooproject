@@ -10,47 +10,19 @@ class Backlog {
         $this->backlogs = array();
     }
 
-    public function list() {
-        $sql = "SELECT * FROM backlog";
-        if (!$result = $this->db->query($sql)) {
-            echo "We're sorry, this website is experiencing problems.";
-        }
-
-        while ($row = $result->fetch_assoc()) {
-            $this->backlogs[] = $row;
-        }
-
-        return $this->backlogs;
-    }
-
-    public function insert($name, $description) {
-        $sql = "INSERT INTO backlog(name, description)
-                VALUES('$name', '$description')";
-
+    public function insert($scrumTeamId) {
+        $sql = "INSERT INTO backlog(scrumTeamId)
+                VALUES(scrumTeamId)";
         $this->db->query($sql);
     }
 
-    public function getBacklog($idScrumId) {
-        $sql = "SELECT * FROM backlog WHERE id = $id";
+    public function getBacklog($scrumTeamId) {
+        $sql = "SELECT * FROM backlog WHERE scrumTeamId = $scrumTeamId";
         $result = $this->db->query($sql);
         $record = $result->fetch_assoc();
         return $record;
     }
 
-    public function update($id, $name, $description) {
-        $sql = "UPDATE backlog
-                SET name = '$name', description = '$description'
-                WHERE id = $id";
-
-        $this->db->query($sql);
-    }
-
-    public function delete($id) {
-        $sql = "DELETE FROM backlog
-                WHERE id = $id";
-
-        $this->db->query($sql);
-    }
 
 }
 

@@ -21,19 +21,18 @@ class SprintController {
 
     }
 
-    public function show($id) {
-        // Lógica para mostrar el sprint y sus tareas asociadas
+    public function show($scrumTeamId) {
         $sprintModel = new Sprint();
-        $sprint = $sprintModel->getSprint($id);
-        // Puedes hacer algo con los datos del sprint, como mostrarlos en una vista.
-
-        // Además, obtén las tareas asociadas al sprint
+        $sprint = $sprintModel->getSprint($scrumTeamId);
+        
         $tasks = $sprintModel->getSprintTasks($id);
         
     }
 
-    public function create() {
-        // Lógica para mostrar el formulario de creación de sprint
+    public function insert() {
+        $data['title'] = "Create Sprint";
+        // Cargar la vista
+        require_once "views/sprint/insert.php";
     }
 
     public function store() {
@@ -51,14 +50,12 @@ class SprintController {
     }
 
     public function edit($id) {
-        // Lógica para mostrar el formulario de edición de sprint
         $sprintModel = new Sprint();
         $sprint = $sprintModel->getSprint($id);
-        // Puedes hacer algo con los datos del sprint, como mostrarlos en un formulario de edición.
+        require_once "views/scrumTeams/edit.php";
     }
 
     public function update($id) {
-        // Lógica para actualizar el sprint en la base de datos
         $name = $_POST['name'];
         $description = $_POST['description'];
         $startDate = $_POST['startDate'];
@@ -67,7 +64,6 @@ class SprintController {
         $sprintModel = new Sprint();
         $sprintModel->update($id, $name, $description, $startDate, $endDate);
 
-        // Después de actualizar el sprint, podrías redirigir a la lista de sprints
         header('Location: index.php?controller=sprint&action=list');
     }
 

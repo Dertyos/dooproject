@@ -10,6 +10,8 @@ require "views/shared/header.php"
     echo "<p>You do not have access.</p>";
   }
   ?>
+  <a href="views/devs/index.php">Devs</a>
+  <a href="views/"></a>
 </div>
 
 <?php
