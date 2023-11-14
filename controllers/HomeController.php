@@ -11,7 +11,7 @@ class HomeController {
       $data['title'] = "Scrum Teams";
       require_once "views/home/index.php";
     } else {
-      header("Location: index.php?controller=user&action=seeLogin");
+      header("Location: index.php?controller=developer&action=seeLogin");
     }
   }
 }

@@ -1,14 +1,14 @@
 USE scrum;
 
 -- Tabla ScrumTeam
-CREATE TABLE scrumTeam (
+CREATE TABLE ScrumTeam (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL, 
     description VARCHAR(255)	
 );
 
 -- Tabla Backlog
-CREATE TABLE backlog (
+CREATE TABLE Backlog (
   id INT NOT NULL AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL,
   description VARCHAR(255) NOT NULL,
@@ -18,19 +18,19 @@ CREATE TABLE backlog (
 );
 
 -- Tabla Sprint
-CREATE TABLE sprint (
+CREATE TABLE Sprint (
   id INT NOT NULL AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL,
   description VARCHAR(255) NOT NULL,
   startDate DATE NOT NULL,
   endDate DATE NOT NULL,
-  PRIMARY KEY (id)
+  PRIMARY KEY (id),
   idScrumTeam INT NOT NULL,
   FOREIGN KEY (idScrumTeam) REFERENCES ScrumTeam (id)
 );
 
 -- Tabla Devs
-CREATE TABLE developer (
+CREATE TABLE Developer (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE developer (
 );
 
 -- Tabla Task
-CREATE TABLE task (
+CREATE TABLE Task (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
@@ -58,7 +58,6 @@ CREATE TABLE task (
     FOREIGN KEY (idDeveloper) REFERENCES Developer (id)
 );
 
-ALTER TABLE task
+ALTER TABLE Task
 ADD CONSTRAINT task_backlog_or_sprint_fk
 CHECK (idBacklog IS NOT NULL OR idSprint IS NOT NULL);
-

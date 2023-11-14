@@ -1,6 +1,6 @@
 <?php
 
-class UserController {
+class developerController {
 
     public function __construct() {
         require_once "models/Developer.php";
@@ -18,52 +18,52 @@ class UserController {
         $password = $_POST['password'];
 
 
-        $user = new Developer();
-        $user->store($name, $email, $phone, $rol, $scrumTeamId, $documentNumber, $password);
+        $developer = new Developer();
+        $developer->store($name, $email, $phone, $rol, $scrumTeamId, $documentNumber, $password);
 
         // Redirect to login
-        header('Location: index.php?controller=user&action=seeLogin');
+        header('Location: index.php?controller=developer&action=seeLogin');
     }
 
     public function seeLogin() {
         $data['title'] = "Login";
-        require_once "views/users/login.php";
+        require_once "views/devs/login.php";
     }
 
     public function seeRegister() {
-        $data['title'] = "User registration";
-        require_once "views/users/register.php";
+        $data['title'] = "developer registration";
+        require_once "views/devs/register.php";
     }
 
     public function login() {
         $documentNumber = $_POST['documentNumber'];
         $password = $_POST['password'];
 
-        $userModel = new Developer();
-        $user = $userModel->getDeveloper($documentNumber);
+        $developerModel = new Developer();
+        $developer = $developerModel->getDeveloper($documentNumber);
 
-        // var_dump($user);
+        // var_dump($developer);
 
-        if($user == null) {
+        if($developer == null) {
             $data['title'] = "Login";
-            $data['error'] = "There is no user with that document number";
-            require_once "views/users/login.php";
+            $data['error'] = "There is no developer with that document number";
+            require_once "views/devs/login.php";
         } else {
             // Verify the password
-            if(password_verify($password, $user['password'])) {
-                $_SESSION["documentNumber"] = $user['documentNumber'];
+            if(password_verify($password, $developer['password'])) {
+                $_SESSION["documentNumber"] = $developer['documentNumber'];
                 header("Location: index.php");
             } else {
                 $data['title'] = "Login";
                 $data['error'] = "Incorrect password";
-                require_once "views/users/login.php";
+                require_once "views/devs/login.php";
             }
         }
     }
 
     public function logout() {
         unset($_SESSION['documentNumber']);
-        header('Location: index.php?controller=user&action=seeLogin');
+        header('Location: index.php?controller=developer&action=seeLogin');
     }
 
 }
