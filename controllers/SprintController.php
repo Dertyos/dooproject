@@ -9,15 +9,15 @@ class SprintController {
 
     public function index() {
 
-        if(isset($_SESSION['documentNumber'])) {
+        // if(isset($_SESSION['documentNumber'])) {
             $task = new Task();
             $data['tasks'] = $task->list();
             $data['title'] = "Task";
             // Cargar la vista
             require_once "views/sprint/index.php";
-        } else {
-            echo "<p>You do not have access</p>";
-        }
+        // } else {
+        //     echo "<p>You do not have access</p>";
+        // }
 
     }
 

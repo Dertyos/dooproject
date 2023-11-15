@@ -36,7 +36,5 @@ class BacklogController {
         // Redirige al índice
         header('Location: index.php?controller=scrumteam&action=index');
     }
-
-
-
+}
 ?>

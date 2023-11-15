@@ -13,7 +13,7 @@ class Developer {
     public function list() {
         $sql = "SELECT * FROM developer";
         if(!$result = $this->db->query($sql)) {
-            echo "We're sorry, this website is experiencing problems.";
+            echo "We are sorry, but the website is having problems.";
         }
 
         while($row = $result->fetch_assoc()) {

@@ -10,15 +10,15 @@ class ScrumTeamController {
 
     public function index() {
 
-        if(isset($_SESSION['documentNumber'])) {
+        // if(isset($_SESSION['documentNumber'])) {
             $scrumTeam = new ScrumTeam();
             $data['scrumTeams'] = $scrumTeam->list();
             $data['title'] = "ScrumTeam";
             // Cargar la vista
             require_once "views/scrumTeams/index.php";
-        } else {
-            echo "<p>You do not have access</p>";
-        }
+        // } else {
+        //     echo "<p>You do not have access</p>";
+        // }
 
     }
 
@@ -49,9 +49,20 @@ class ScrumTeamController {
     public function view($id) {
         $scrumTeam = new ScrumTeam();
         $sprint = new Sprint();
-        $data['title'] = "ScrumTeam details";
-        $data['sprints'] = $sprint->list($id); // [
         $data['scrumTeam'] = $scrumTeam->getScrumTeam($id);
+        $data['sprints'] = $sprint->list($id);
+
+        $backlog = new Backlog();
+        $tasks = new Task();
+        $data['backlog'] = $backlog->getBacklog($id);
+        $data['backlogtask'] = $tasks->getBacklogTasks($data['backlog']['id']);
+
+        $sprint = new Sprint();
+        $data['sprint'] = $sprint->getSprint($id);
+        $data['sprinttask'] = $tasks->getSprintTasks($data['sprint']['id']);
+    
+        $data['title'] = "ScrumTeam Details";
+
         require_once "views/scrumTeams/view.php";
     }
 
