@@ -22,6 +22,12 @@ class Backlog {
         $record = $result->fetch_assoc();
         return $record;
     }
+    public function getBacklogById($id) {
+        $sql = "SELECT * FROM backlog WHERE id = $id";
+        $result = $this->db->query($sql);
+        $record = $result->fetch_assoc();
+        return $record;
+    }
 
 
 }

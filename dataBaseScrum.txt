@@ -63,6 +63,8 @@ CREATE TABLE Task (
 ALTER TABLE Task
 ADD CONSTRAINT task_backlog_or_sprint_fk
 CHECK (backlogId IS NOT NULL OR sprintId IS NOT NULL);
+ALTER TABLE Backlog
+ADD UNIQUE (scrumTeamId);
 
 -- Insertando equipos Scrum
 INSERT INTO ScrumTeam (name, description) VALUES ('Equipo Alfa', 'Primer equipo de desarrollo');

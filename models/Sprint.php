@@ -38,6 +38,13 @@ public function getSprint($scrumTeamId) {
     $devObject = $consult->fetch_assoc();
     return $devObject;
 }
+public function getSprintById($id) {
+    $sql = "SELECT * FROM sprint
+            WHERE id = '$id'";
+    $consult = $this->db->query($sql);
+    $devObject = $consult->fetch_assoc();
+    return $devObject;
+}
 
 public function update($id, $name, $description, $startDate, $endDate) { // update a specific sprint
     $sql = "UPDATE sprint

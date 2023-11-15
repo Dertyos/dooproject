@@ -31,7 +31,7 @@ class Task {
     }
 
     public function getBacklogTasks($backlogId) {
-        $sql = "SELECT * FROM taks
+        $sql = "SELECT * FROM task
                 WHERE backlogId = '$backlogId'";
         $consult = $this->db->query($sql);
         $devObject = $consult->fetch_assoc();
@@ -39,11 +39,14 @@ class Task {
     }
 
     public function getDeveloperTasks($developerId) {
-        $sql = "SELECT * FROM taks
-                WHERE developerId = '$developerId'";
+        $sql = "SELECT * FROM task WHERE developerId = '$developerId'";
         $consult = $this->db->query($sql);
-        $devObject = $consult->fetch_assoc();
-        return $devObject;
+        
+        $tasks = [];
+        while ($row = $consult->fetch_assoc()) {
+            $tasks[] = $row;
+        }
+        return $tasks;
     }
 
     public function getTasksSprint($sprintId) {

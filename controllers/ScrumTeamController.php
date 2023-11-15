@@ -6,6 +6,7 @@ class ScrumTeamController {
         require_once 'models/ScrumTeam.php';
         require_once 'models/Sprint.php';
         require_once 'models/Task.php';
+        require_once 'models/Backlog.php';
     }
 
     public function index() {
@@ -57,10 +58,9 @@ class ScrumTeamController {
         $data['backlog'] = $backlog->getBacklog($id);
         $data['backlogtask'] = $tasks->getBacklogTasks($data['backlog']['id']);
 
-        $sprint = new Sprint();
-        $data['sprint'] = $sprint->getSprint($id);
-        $data['sprinttask'] = $tasks->getTasksSprint($data['sprint']['id']);
-    
+        foreach ($data['sprints'] as $sprint) {
+            $data['sprintTasks'][$sprint['id']] = $tasks->getTasksSprint($sprint['id']);
+        }
         $data['title'] = "ScrumTeam Details";
 
         require_once "views/scrumTeams/view.php";

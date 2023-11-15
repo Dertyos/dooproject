@@ -5,6 +5,7 @@ class DeveloperController {
     public function __construct() {
         require_once "models/Developer.php";
         require_once 'models/ScrumTeam.php';
+        require_once 'models/Task.php';
     }
 
     public function index() {
@@ -124,7 +125,7 @@ class DeveloperController {
         $developer = new Developer();
         $tasks = new Task();
     
-        $data['developer'] = $developer->getDeveloper($id);
+        $data['developer'] = $developer->getDeveloperById($id);
         $data['developerTasks'] = $tasks->getDeveloperTasks($id);
         $data['title'] = "Developer Details";
     
