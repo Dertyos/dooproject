@@ -1,90 +1,88 @@
 USE scrum;
 
--- Tabla Backlog
-CREATE TABLE backlog (
-  id INT NOT NULL AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL,
-  description VARCHAR(255) NOT NULL,
-  PRIMARY KEY (id)
-);
-
--- Tabla Sprint
-CREATE TABLE sprint (
-  id INT NOT NULL AUTO_INCREMENT,
-  name VARCHAR(255) NOT NULL,
-  description VARCHAR(255) NOT NULL,
-  startDate DATE NOT NULL,
-  endDate DATE NOT NULL,
-  PRIMARY KEY (id)
-);
-
-
 -- Tabla ScrumTeam
-CREATE TABLE scrumTeam (
+CREATE TABLE ScrumTeam (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL, 
     description VARCHAR(255)	
 );
 
+-- Tabla Backlog
+CREATE TABLE Backlog (
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255),
+  description VARCHAR(255),
+  scrumTeamId INT NOT NULL,
+  FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id) ON DELETE CASCADE,
+  PRIMARY KEY (id)
+);
+
+-- Tabla Sprint
+CREATE TABLE Sprint (
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  startDate DATE NOT NULL,
+  endDate DATE NOT NULL,
+  PRIMARY KEY (id),
+  scrumTeamId INT NOT NULL,
+  FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id) ON DELETE CASCADE
+);
+
 -- Tabla Devs
-CREATE TABLE developer (
+CREATE TABLE Developer (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
-    phone VARCHAR(255) NOT NULL,
-    idScrumTeam INT,
-    FOREIGN KEY (idScrumTeam) REFERENCES ScrumTeam (id)
+    phone VARCHAR(10) NOT NULL,
+    rol ENUM('Developer', 'ScrumMaster', 'ProductOwner') NOT NULL,
+    scrumTeamId INT,  
+    documentNumber VARCHAR(10) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id) ON DELETE SET NULL
 );
 
 -- Tabla Task
-CREATE TABLE task (
+CREATE TABLE Task (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
     priority INT NOT NULL,
     estimatedTime INT NOT NULL,
     status ENUM('pending', 'in_progress', 'completed') NOT NULL,
-    idBacklog INT,
-    idSprint INT,
-    idDeveloper INT,
-    FOREIGN KEY (idBacklog) REFERENCES Backlog (id),
-    FOREIGN KEY (idSprint) REFERENCES Sprint (id),
-    FOREIGN KEY (idDeveloper) REFERENCES Developer (id)
+    backlogId INT,
+    sprintId INT,
+    developerId INT,
+    scrumTeamId INT NOT NULL,
+    FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id) ON DELETE CASCADE,
+    FOREIGN KEY (backlogId) REFERENCES Backlog (id),
+    FOREIGN KEY (sprintId) REFERENCES Sprint (id) ON DELETE CASCADE,
+    FOREIGN KEY (developerId) REFERENCES Developer (id) ON DELETE SET NULL
 );
 
-ALTER TABLE task
+ALTER TABLE Task
 ADD CONSTRAINT task_backlog_or_sprint_fk
-CHECK (idBacklog IS NOT NULL OR idSprint IS NOT NULL);
+CHECK (backlogId IS NOT NULL OR sprintId IS NOT NULL);
 
+-- Insertando equipos Scrum
+INSERT INTO ScrumTeam (name, description) VALUES ('Equipo Alfa', 'Primer equipo de desarrollo');
+INSERT INTO ScrumTeam (name, description) VALUES ('Equipo Beta', 'Segundo equipo de desarrollo');
 
--- Insertar datos en la tabla Backlog
-INSERT INTO backlog (name, description)
-VALUES
-('Implement user authentication', 'This task involves creating a login system that allows users to securely access the application.'),
-('Develop product catalog page', 'This task involves creating a page that displays all of the products available for purchase.'),
-('Integrate payment gateway', 'This task involves integrating a payment gateway that allows users to purchase products using credit cards or other payment methods.');
+-- Insertando backlogs (uno por equipo)
+INSERT INTO Backlog (name, description, scrumTeamId) VALUES ('Backlog Alfa', 'Backlog para Equipo Alfa', 1);
+INSERT INTO Backlog (name, description, scrumTeamId) VALUES ('Backlog Beta', 'Backlog para Equipo Beta', 2);
 
--- Insertar datos en la tabla Sprint
-INSERT INTO sprint (name, description, startDate, endDate)
-VALUES
-('Sprint 1', 'The first sprint of the project', '2023-11-07', '2023-11-18'),
-('Sprint 2', 'The second sprint of the project', '2023-11-21', '2023-12-02');
+-- Insertando sprints
+INSERT INTO Sprint (name, description, startDate, endDate, scrumTeamId) VALUES ('Sprint 1', 'Primer sprint del Equipo Alfa', '2023-01-01', '2023-01-15', 1);
+INSERT INTO Sprint (name, description, startDate, endDate, scrumTeamId) VALUES ('Sprint 2', 'Segundo sprint del Equipo Alfa', '2023-01-16', '2023-01-31', 1);
+INSERT INTO Sprint (name, description, startDate, endDate, scrumTeamId) VALUES ('Sprint 1', 'Primer sprint del Equipo Beta', '2023-01-01', '2023-01-15', 2);
 
--- Insertar datos en la tabla ScrumTeam
-INSERT INTO scrumTeam (name, description)
-VALUES
-('Scrum Team 1', 'This is the first scrum team for the project.'),
-('Scrum Team 2', 'This is the second scrum team for the project.');
+-- Insertando desarrolladores
+INSERT INTO Developer (name, email, phone, rol, scrumTeamId, documentNumber, password) VALUES ('Juan Perez', 'juan@example.com', '1234567890', 'Developer', 1, '123456789', 'password123');
+INSERT INTO Developer (name, email, phone, rol, scrumTeamId, documentNumber, password) VALUES ('Ana García', 'ana@example.com', '0987654321', 'ScrumMaster', 1, '987654321', 'password456');
+INSERT INTO Developer (name, email, phone, rol, scrumTeamId, documentNumber, password) VALUES ('Luis Rodríguez', 'luis@example.com', '1122334455', 'ProductOwner', 2, '112233445', 'password789');
 
--- Insertar datos en la tabla Developer
-INSERT INTO developer (name, email, phone, idScrumTeam)
-VALUES
-('John Doe', 'johndoe@example.com', '+1234567890', 1),
-('Jane Doe', 'janedoe@example.com', '+9876543210', 2);
-
--- Insertar datos en la tabla Task
-INSERT INTO task (name, description, priority, estimatedTime, status, idBacklog, idSprint, idDeveloper)
-VALUES
-('Implement user registration', 'This task involves creating a registration form that allows users to create new accounts.', 1, 4, 'pending', 1, 1, 1),
-('Design product catalog layout', 'This task involves designing the layout of the product catalog page.', 3, 2, 'pending', 2, NULL, 2),
-('Configure payment gateway settings', 'This task involves configuring the settings for the payment gateway.', 2, 3, 'in_progress', NULL, 2, 1);
+-- Insertando tareas
+INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 1', 'Descripción de la Tarea 1', 1, 5, 'pending', 1, NULL, 1, 1);
+INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 2', 'Descripción de la Tarea 2', 2, 3, 'in_progress', 1, 1, 1, 1);
+INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 3', 'Descripción de la Tarea 3', 3, 8, 'completed', 2, 2, 2, 2);

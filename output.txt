@@ -1,0 +1,798 @@
+dataBaseScrum  
+USE scrum;
+
+-- Tabla ScrumTeam
+CREATE TABLE scrumTeam (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL, 
+    description VARCHAR(255)	
+);
+
+-- Tabla Backlog
+CREATE TABLE backlog (
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  idScrumTeam INT NOT NULL,
+  FOREIGN KEY (idScrumTeam) REFERENCES ScrumTeam (id),
+  PRIMARY KEY (id)
+);
+
+-- Tabla Sprint
+CREATE TABLE sprint (
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  startDate DATE NOT NULL,
+  endDate DATE NOT NULL,
+  PRIMARY KEY (id),
+  idScrumTeam INT NOT NULL,
+  FOREIGN KEY (idScrumTeam) REFERENCES ScrumTeam (id)
+);
+
+-- Tabla Devs
+CREATE TABLE developer (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(255) NOT NULL,
+    rol ENUM('Developer', 'ScrumMaster', 'ProductOwner') NOT NULL,
+    idScrumTeam INT NOT NULL,
+    FOREIGN KEY (idScrumTeam) REFERENCES scrumTeam (id)
+);
+
+-- Tabla Task
+CREATE TABLE task (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    priority INT NOT NULL,
+    estimatedTime INT NOT NULL,
+    status ENUM('pending', 'in_progress', 'completed') NOT NULL,
+    idBacklog INT,
+    idSprint INT,
+    idDeveloper INT,
+    idScrumTeam INT NOT NULL,
+    FOREIGN KEY (idScrumTeam) REFERENCES ScrumTeam (id),
+    FOREIGN KEY (idBacklog) REFERENCES Backlog (id),
+    FOREIGN KEY (idSprint) REFERENCES Sprint (id),
+    FOREIGN KEY (idDeveloper) REFERENCES Developer (id)
+);
+
+ALTER TABLE task
+ADD CONSTRAINT task_backlog_or_sprint_fk
+CHECK (idBacklog IS NOT NULL OR idSprint IS NOT NULL);
+
+index  
+<?php 
+
+    require_once "settings/settings.php";
+    require_once "core/routes.php";
+
+    require_once "settings/database.php";
+    require_once "controllers/HomeController.php";
+    require_once "controllers/UserController.php";
+
+    if(isset($_GET['controller'])) {
+        $controller = getController($_GET['controller']);
+        if(isset($_GET['action'])) {
+            if(isset($_GET['id'])) {
+                getAction($controller, $_GET['action'], $_GET['id']);
+            } else {
+                getAction($controller, $_GET['action']);
+            }
+            
+        } else {
+            getAction($controller, PRINCIPAL_ACTION);
+        }
+    } else {
+        $controller = getController(PRINCIPAL_CONTROLLER);
+        getAction($controller, PRINCIPAL_ACTION);
+    }
+
+?>BacklogController  
+HomeController  
+<?php
+
+class HomeController {
+  public function index() {
+    if(!isset($_SESSION)) {
+      session_start();
+    }
+
+    if(isset($_SESSION['documentNumber']))
+    {
+      $data['title'] = "Scrum Teams";
+      require_once "views/home/index.php";
+    } else {
+      header("Location: index.php?controller=user&action=seeLogin");
+    }
+  }
+}
+
+?>SprintController  
+<?php
+
+class SprintController {
+
+    public function __construct() {
+        require_once "models/Sprint.php";
+        session_start();
+    }
+
+    public function show($id) {
+        // Lógica para mostrar el sprint y sus tareas asociadas
+        $sprintModel = new Sprint();
+        $sprint = $sprintModel->getSprint($id);
+        // Puedes hacer algo con los datos del sprint, como mostrarlos en una vista.
+
+        // Además, obtén las tareas asociadas al sprint
+        $tasks = $sprintModel->getSprintTasks($id);
+        // Puedes pasar las tareas a la vista para mostrarlas en el contexto del sprint.
+    }
+
+    public function create() {
+        // Lógica para mostrar el formulario de creación de sprint
+    }
+
+    public function store() {
+        // Lógica para almacenar el nuevo sprint en la base de datos
+        $name = $_POST['name'];
+        $description = $_POST['description'];
+        $startDate = $_POST['startDate'];
+        $endDate = $_POST['endDate'];
+
+        $sprintModel = new Sprint();
+        $sprintModel->insert($name, $description, $startDate, $endDate);
+
+        // Después de almacenar el sprint, podrías redirigir a la lista de sprints
+        header('Location: index.php?controller=sprint&action=list');
+    }
+
+    public function edit($id) {
+        // Lógica para mostrar el formulario de edición de sprint
+        $sprintModel = new Sprint();
+        $sprint = $sprintModel->getSprint($id);
+        // Puedes hacer algo con los datos del sprint, como mostrarlos en un formulario de edición.
+    }
+
+    public function update($id) {
+        // Lógica para actualizar el sprint en la base de datos
+        $name = $_POST['name'];
+        $description = $_POST['description'];
+        $startDate = $_POST['startDate'];
+        $endDate = $_POST['endDate'];
+
+        $sprintModel = new Sprint();
+        $sprintModel->update($id, $name, $description, $startDate, $endDate);
+
+        // Después de actualizar el sprint, podrías redirigir a la lista de sprints
+        header('Location: index.php?controller=sprint&action=list');
+    }
+
+    public function delete($id) {
+        // Lógica para eliminar el sprint de la base de datos
+        $sprintModel = new Sprint();
+        $sprintModel->delete($id);
+
+        // Después de eliminar el sprint, podrías redirigir a la lista de sprints
+        header('Location: index.php?controller=sprint&action=list');
+    }
+
+    public function moveTask($taskId, $sprintId) {
+        // Lógica para mover una tarea de un sprint a otro
+        $sprintModel = new Sprint();
+        $sprintModel->moveTaskToSprint($taskId, $sprintId);
+
+        // Después de mover la tarea, podrías redirigir a la vista del sprint actualizado
+        header("Location: index.php?controller=sprint&action=show&id=$sprintId");
+    }
+
+}
+TaskController  
+<?php
+
+class TaskController {
+
+    public function __construct() {
+        require_once "models/Task.php";
+        session_start();
+    }
+
+    public function list() {
+        $taskModel = new Task();
+        $tasks = $taskModel->list();
+        // Puedes hacer algo con los datos de las tareas, como mostrarlos en una vista
+        // Por ejemplo, podrías renderizar una vista que muestre la lista de tareas.
+    }
+
+    public function create() {
+        // Lógica para mostrar el formulario de creación de tarea
+    }
+
+    public function store() {
+        // Lógica para almacenar la nueva tarea en la base de datos
+        $name = $_POST['name'];
+        $description = $_POST['description'];
+        $priority = $_POST['priority'];
+        $estimated = $_POST['estimated'];
+        $status = $_POST['status'];
+        $backlogId = $_POST['backlogId'];
+        $sprintId = $_POST['sprintId'];
+        $developerId = $_POST['developerId'];
+
+        $taskModel = new Task();
+        $taskModel->insert($name, $description, $priority, $estimated, $status, $backlogId, $sprintId, $developerId);
+
+        // Después de almacenar la tarea, podrías redirigir a la lista de tareas
+        header('Location: index.php?controller=task&action=list');
+    }
+
+    public function edit($id) {
+        // Lógica para mostrar el formulario de edición de tarea
+        $taskModel = new Task();
+        $task = $taskModel->getTask($id);
+        // Puedes hacer algo con los datos de la tarea, como mostrarlos en un formulario de edición.
+    }
+
+    public function update($id) {
+        // Lógica para actualizar la tarea en la base de datos
+        $name = $_POST['name'];
+        $description = $_POST['description'];
+        $priority = $_POST['priority'];
+        $estimated = $_POST['estimated'];
+        $status = $_POST['status'];
+        $backlogId = $_POST['backlogId'];
+        $sprintId = $_POST['sprintId'];
+        $developerId = $_POST['developerId'];
+
+        $taskModel = new Task();
+        $taskModel->update($id, $name, $description, $priority, $estimated, $status, $backlogId, $sprintId, $developerId);
+
+        // Después de actualizar la tarea, podrías redirigir a la lista de tareas
+        header('Location: index.php?controller=task&action=list');
+    }
+
+    public function delete($id) {
+        // Lógica para eliminar la tarea de la base de datos
+        $taskModel = new Task();
+        $taskModel->delete($id);
+
+        // Después de eliminar la tarea, podrías redirigir a la lista de tareas
+        header('Location: index.php?controller=task&action=list');
+    }
+
+}
+?>UserController  
+<?php
+
+class UserController {
+
+    public function __construct() {
+        require_once "models/Developer.php";
+        session_start();
+    }
+
+    public function register() {
+        
+        $name = $_POST['name'];
+        $email = $_POST['email'];
+        $phone = $_POST['phone'];
+        $rol = $_POST['rol'];
+        $scrumTeamId = $_POST['scrumTeamId']; 
+        $documentNumber = $_POST['documentNumber'];
+        $password = $_POST['password'];
+
+
+        $user = new Developer();
+        $user->store($name, $email, $phone, $rol, $scrumTeamId, $documentNumber, $password);
+
+        // Redirect to login
+        header('Location: index.php?controller=user&action=seeLogin');
+    }
+
+    public function seeLogin() {
+        $data['title'] = "Login";
+        require_once "views/users/login.php";
+    }
+
+    public function seeRegister() {
+        $data['title'] = "User registration";
+        require_once "views/users/register.php";
+    }
+
+    public function login() {
+        $documentNumber = $_POST['documentNumber'];
+        $password = $_POST['password'];
+
+        $userModel = new Developer();
+        $user = $userModel->getDeveloper($documentNumber);
+
+        // var_dump($user);
+
+        if($user == null) {
+            $data['title'] = "Login";
+            $data['error'] = "There is no user with that document number";
+            require_once "views/users/login.php";
+        } else {
+            // Verify the password
+            if(password_verify($password, $user['password'])) {
+                $_SESSION["documentNumber"] = $user['documentNumber'];
+                header("Location: index.php");
+            } else {
+                $data['title'] = "Login";
+                $data['error'] = "Incorrect password";
+                require_once "views/users/login.php";
+            }
+        }
+    }
+
+    public function logout() {
+        unset($_SESSION['documentNumber']);
+        header('Location: index.php?controller=user&action=seeLogin');
+    }
+
+}
+
+
+?>
+routes  
+<?php
+
+function getController($controller) {
+
+    $nameController = ucwords($controller);
+    $fileController = "controllers/$nameController.php";
+
+    if(!is_file($fileController)){ // Si no es un archivo
+        // Cargar el controlador principal
+        $fileController = "controllers/" . PRINCIPAL_CONTROLLER . ".php";
+    }
+
+
+    require_once $fileController;
+    $control = new $nameController;
+    return $control;
+
+
+}
+
+function getAction($controller, $action, $id=null) {
+
+    if(isset($action) && method_exists($controller, $action)) {
+
+        if($id == null) {
+            $controller->$action();
+        } else {
+            $controller->$action($id);
+        }
+        
+
+    } else {
+        $controller->PRINCIPAL_ACTION;
+    }
+}
+
+?>Backlog  
+<?php
+
+class Backlog {
+
+    private $db;
+    private $backlogs;
+
+    public function __construct() {
+        $this->db = Connection::connect();
+        $this->backlogs = array();
+    }
+
+    public function list() {
+        $sql = "SELECT * FROM backlog";
+        if (!$result = $this->db->query($sql)) {
+            echo "We're sorry, this website is experiencing problems.";
+        }
+
+        while ($row = $result->fetch_assoc()) {
+            $this->backlogs[] = $row;
+        }
+
+        return $this->backlogs;
+    }
+
+    public function insert($name, $description) {
+        $sql = "INSERT INTO backlog(name, description)
+                VALUES('$name', '$description')";
+
+        $this->db->query($sql);
+    }
+
+    public function getBacklog($idScrumId) {
+        $sql = "SELECT * FROM backlog WHERE id = $id";
+        $result = $this->db->query($sql);
+        $record = $result->fetch_assoc();
+        return $record;
+    }
+
+    public function update($id, $name, $description) {
+        $sql = "UPDATE backlog
+                SET name = '$name', description = '$description'
+                WHERE id = $id";
+
+        $this->db->query($sql);
+    }
+
+    public function delete($id) {
+        $sql = "DELETE FROM backlog
+                WHERE id = $id";
+
+        $this->db->query($sql);
+    }
+
+}
+
+?>Developer  
+<?php
+
+class Developer {
+
+    private $db;
+    private $developers;
+
+    public function __construct() {
+        $this->db = Connection::connect();
+        $this->developers = array();
+    }
+
+    public function list() {
+        $sql = "SELECT * FROM developer";
+        if(!$result = $this->db->query($sql)) {
+            echo "We're sorry, this website is experiencing problems.";
+        }
+
+        while($row = $result->fetch_assoc()) {
+            $this->developers[] = $row;
+        }
+
+        return $this->developers;
+    }
+
+    public function insert($name, $email, $phone, $rol, $scrumTeamId, $documentNumber, $password) {
+        $sql = "INSERT INTO developer(name, email, phone, rol, scrumTeamId, documentNumber, password )
+                VALUES('$name', '$email', '$phone', $'rol', $scrumTeamId, $'documentNumber', $'password')";
+        
+        $this->db->query($sql);
+    }
+
+    public function getDeveloper($documentNumber) {
+        $sql = "SELECT developer.*, scrumTeam.name as scrumTeamName
+                FROM `developer` 
+                JOIN scrumTeam 
+                ON developer.scrumTeamId = scrumTeam.id 
+                WHERE developer.documentNumber = $documentNumber";
+        
+        $result = $this->db->query($sql);
+        $record = $result->fetch_assoc();
+        return $record;
+    }
+
+    public function update($id, $name, $email, $phone, $rol, $scrumTeamId, $documentNumber, $password) {
+        $sql = "UPDATE developer
+                SET name = '$name', email = '$email', phone = '$phone', rol = 'rol', scrumTeamId = $scrumTeamId, documentNumber = '$documentNumber', password = '$password'
+                WHERE id = $id";
+
+        $this->db->query($sql);
+    }
+
+    public function delete($id) {
+        $sql = "DELETE FROM developer 
+                WHERE id = $id";
+
+        $this->db->query($sql);
+    }
+
+}
+?>ScrumTeam  
+<?php
+
+class ScrumTeam {
+
+    private $db;
+    private $scrumTeams;
+
+    public function __construct() {
+        $this->db = Conexion::conectar();
+        $this->scrumTeams = array();
+    }
+
+    public function list() {
+        // $sql = "SELECT * FROM scrum_team";
+        $sql = "SELECT * FROM scrum_team";
+        if (!$resultado = $this->db->query($sql)) {
+            // echo "Lo sentimos, este sitio web está experimentando problemas.";
+            echo "We are sorry, this website is experiencing problems.";
+        }
+
+        while ($fila = $resultado->fetch_assoc()) {
+            $this->scrumTeams[] = $fila;
+        }
+
+        return $this->scrumTeams;
+    }
+
+    public function insert($name, $description) {
+        // $sql = "INSERT INTO scrum_team(nombre, descripcion) VALUES('$nombre', '$descripcion')";
+        $sql = "INSERT INTO scrum_team(name, description) VALUES('$name', '$description')";
+        $this->db->query($sql);
+    }
+
+    public function getScrumTeam($id) {
+        // $sql = "SELECT scrum_team.*, developer.name as developerName FROM `scrum_team` JOIN developer ON scrum_team.id = developer.idScrumTeam WHERE scrum_team.id = $id";
+        $sql = "SELECT scrum_team.*, developer.name as developerName FROM `scrum_team` JOIN developer ON scrum_team.id = developer.idScrumTeam WHERE scrum_team.id = $id";
+        $resultado = $this->db->query($sql);
+        $registro = $resultado->fetch_assoc();
+        return $registro;
+    }
+
+    public function update($id, $name, $description) {
+        // $sql = "UPDATE scrum_team SET nombre = '$nombre', descripcion = '$descripcion' WHERE id = $id";
+        $sql = "UPDATE scrum_team SET name = '$name', description = '$descripcion' WHERE id = $id";
+        $this->db->query($sql);
+    }
+
+    public function delete($id) {
+        // $sql = "DELETE FROM scrum_team WHERE id = $id";
+        $sql = "DELETE FROM scrum_team WHERE id = $id";
+        $this->db->query($sql);
+    }
+
+}
+?>Sprint  
+<?php
+
+class Sprint {
+
+private $db; // database connection
+private $sprints; // array of sprints
+
+public function __construct() {
+    $this->db = Conexion::conectar(); // connect to database
+    $this->sprints = array(); // initialize sprints array
+}
+
+public function list() { // list all sprints
+    $sql = "SELECT * FROM sprint"; // SQL query to select all sprints
+    $resultado = $this->db->query($sql); // execute SQL query
+    if (!$resultado) {
+        echo "Lo sentimos, este sitio web está experimentando problemas.";
+        exit; // exit if SQL query fails
+    }
+
+    while ($fila = $resultado->fetch_assoc()) { // iterate over results and add each sprint to the sprints array
+        $this->sprints[] = $fila;
+    }
+
+    return $this->sprints; // return the sprints array
+}
+
+public function insert($name, $description, $startDate, $endDate) { // insert a new sprint
+    $sql = "INSERT INTO sprint(nombre, descripcion, fechaInicio, fechaFin)
+            VALUES('$name', '$description', '$startDate', '$endDate')"; // SQL query to insert a new sprint
+    $this->db->query($sql); // execute SQL query
+}
+
+public function getSprint($id) { // get a specific sprint by ID
+    $sql = "SELECT sprint.*, backlog.name as backlogName
+            FROM `sprint`
+            JOIN backlog
+            ON sprint.idBacklog = backlog.id
+            WHERE sprint.id = $id"; // SQL query to select a specific sprint by ID
+    $resultado = $this->db->query($sql); // execute SQL query
+    $registro = $resultado->fetch_assoc(); // get the first row of the result set
+    return $registro; // return the sprint data
+}
+
+public function update($id, $name, $description, $startDate, $endDate) { // update a specific sprint
+    $sql = "UPDATE sprint
+            SET nombre = '$name', descripcion = '$description', fechaInicio = '$startDate', fechaFin = '$endDate'
+            WHERE id = $id"; // SQL query to update a specific sprint
+    $this->db->query($sql); // execute SQL query
+}
+
+public function delete($id) { // delete a specific sprint by ID
+    $sql = "DELETE FROM sprint
+            WHERE id = $id"; // SQL query to delete a specific sprint by ID
+    $this->db->query($sql); // execute SQL query
+}
+
+}
+?>Task  
+<?php
+
+class Task {
+
+    private $database;
+    private $tasks;
+
+    public function __construct() {
+        $this->database = Connection::connect();
+        $this->tasks = array();
+    }
+
+    public function list() {
+        $sql = "SELECT * FROM task";
+        if (!$result = $this->database->query($sql)) {
+            echo "Sorry, this website is experiencing problems.";
+        }
+
+        while ($row = $result->fetch_assoc()) {
+            $this->tasks[] = $row;
+        }
+
+        return $this->tasks;
+    }
+
+    public function insert($name, $description, $priority, $estimated, $status, $backlogId, $sprintId, $developerId) {
+        $sql = "INSERT INTO task(name, description, priority, estimated, status, backlogId, sprintId, developerId)
+                VALUES('$name', '$description', $priority, $estimated, '$status', $backlogId, $sprintId, $developerId)";
+
+        $this->database->query($sql);
+    }
+
+    public function getTask($id) {
+        $sql = "SELECT task.*, backlog.name as backlogName, sprint.name as sprintName, developer.name as developerName
+                FROM `task`
+                JOIN backlog
+                ON task.backlogId = backlog.id
+                JOIN sprint
+                ON task.sprintId = sprint.id
+                JOIN developer
+                ON task.developerId = developer.id
+                WHERE task.id = $id";
+
+        $result = $this->database->query($sql);
+        $record = $result->fetch_assoc();
+        return $record;
+    }
+
+    public function update($id, $name, $description, $priority, $estimated, $status, $backlogId, $sprintId, $developerId) {
+        $sql = "UPDATE task
+                SET name = '$name', description = '$description', priority = $priority, estimated = $estimated, status = '$status', backlogId = $backlogId, sprintId = $sprintId, developerId = $developerId
+                WHERE id = $id";
+
+        $this->database->query($sql);
+    }
+
+    public function delete($id) {
+        $sql = "DELETE FROM task
+                WHERE id = $id";
+
+        $this->database->query($sql);
+    }
+
+}
+
+?>
+database  
+<?php
+
+class Conection {
+
+    public static function conect() {
+        $conection = new mysqli("127.0.0.1", "root", "", "uccdev");
+        if(!$conection) {
+            die("failed conection: " . mysqli_connect_error());
+        }
+        return $conection;
+    }
+
+}
+
+?>settings  
+<?php
+
+    // Constante para el controlador principal
+    define("PRINCIPAL_CONTROLLER", "HomeController");
+    // Constante para la accion principal
+    define("PRINCIPAL_ACTION", "index");
+
+?>index  
+<?php
+// Require the shared header file
+require "views/shared/header.php"
+?>
+
+<div class="container">
+  <?php
+  // If the session variable "documentNumber" is set, echo a welcome message with the user's documentNumber number
+  if (isset($_SESSION['documentNumber'])) {
+    echo "<p>Welcome to the system " . $_SESSION['documentNumber'] . "</p>";
+  } else {
+    echo "<p>You do not have access.<p/>";
+  }
+  ?>
+</div>
+
+<?php
+// Require the shared footer file
+require "views/shared/footer.php"
+?>footer  
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>header  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <title><?= $data['titulo'] ?></title>
+</head>
+<body>loginHeader  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="assets/css/login.css"> -->
+    <title><?= $data['title'] ?></title>
+</head>
+<body>login  
+<?php include_once "views/shared/loginHeader.php" ?>
+
+<h1 class="text-center"><?= $data['Title'] ?></h1>
+
+
+<div class="container text-center">
+    <?php
+        if(isset($data['error'])) {
+            echo "<div class='alert alert-danger' role='alert'>";
+            echo $data['error'];
+            echo "</div>";
+        }
+    ?>
+    <div class="form-signin">
+        <form action="index.php?controller=user&action=login" method="post">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" name="documentNumber" placeholder="0123456789" maxlength="10" >
+                <label for="documentNumber">Document Number</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" name="password" placeholder="Password" >
+                <label for="password">Password</label>
+            </div>
+            <button type="submit" class="btn btn-primary">LogIn</button>
+        </form>
+    </div>
+</div>
+
+<?php include_once "views/shared/footer.php" ?>register  
+<?php include_once "views/shared/loginHeader.php" ?>
+
+<h1 class="text-center"><?= $data['title'] ?></h1>
+
+<div class="container text-center">
+    <div class="form-signin">
+        <form action="index.php?controller=user&action=register" method="post">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" name="name" placeholder="Name" >
+                <label for="name">Name</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" name="documentNumber" placeholder="0123456789" maxlength="10" >
+                <label for="documentNumber">Document Number</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="email" class="form-control" name="email" placeholder="name@gmail.com" >
+                <label for="email">Email Address</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input type="password" class="form-control" name="password" placeholder="Password" >
+                <label for="password">Password</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+    </div>
+</div>
+
+<?php include_once "views/shared/footer.php" ?>

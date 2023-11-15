@@ -1,13 +1,13 @@
 <?php
 
-class Conection {
+class Connection {
 
-    public static function conect() {
-        $conection = new mysqli("127.0.0.1", "root", "", "uccdev");
-        if(!$conection) {
-            die("failed conection: " . mysqli_connect_error());
+    public static function connect() {
+        $connection = new mysqli("127.0.0.1", "root", "", "scrum");
+        if(!$connection) {
+            die("failed connection: " . mysqli_connect_error());
         }
-        return $conection;
+        return $connection;
     }
 
 }

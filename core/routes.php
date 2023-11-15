@@ -2,12 +2,12 @@
 
 function getController($controller) {
 
-    $nameController = ucwords($controller) . "Controller";
+    $nameController = ucwords($controller). "Controller";
     $fileController = "controllers/$nameController.php";
 
     if(!is_file($fileController)){ // Si no es un archivo
         // Cargar el controlador principal
-        $fileController = "controllers/" . PRINCIPAL_CONTROLLER . "Controller.php";
+        $fileController = "controllers/" . PRINCIPAL_CONTROLLER . ".php";
     }
 
 
