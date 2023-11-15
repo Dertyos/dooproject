@@ -40,22 +40,34 @@ class Developer {
         return $devObject;
     }
 
+    public function getDeveloperById($id) {
+        $sql = "SELECT * FROM developer WHERE id = '$id'";
+        $consult = $this->db->query($sql);
+        $devObject = $consult->fetch_assoc();
+        return $devObject;
+    }
+    
 
-    public function update($id, $name, $email, $phone, $rol, $scrumTeamId, $documentNumber, $password) {
-        
-        $password = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "UPDATE developer
-                SET name = '$name', email = '$email', phone = '$phone', rol = 'rol', scrumTeamId = $scrumTeamId, documentNumber = '$documentNumber', password = '$password'
-                WHERE id = $id";
-
-        $this->db->query($sql);
+    public function update($id, $fields) {
+        $updates = [];
+        foreach ($fields as $key => $value) {
+            if ($value !== null) {
+                if ($key == 'password') {
+                    $value = password_hash($value, PASSWORD_BCRYPT);
+                }
+                $updates[] = "$key = '$value'";
+            }
+        }
+    
+        if (count($updates) > 0) {
+            $sql = "UPDATE developer SET " . implode(', ', $updates) . " WHERE id = $id";
+            $this->db->query($sql);
+        }
     }
 
     public function delete($id) {
-        $sql = "DELETE FROM developer 
-                WHERE id = $id";
-
+        $sql = "DELETE FROM developer WHERE id = $id";
         $this->db->query($sql);
     }
 

@@ -59,7 +59,7 @@ class ScrumTeamController {
 
         $sprint = new Sprint();
         $data['sprint'] = $sprint->getSprint($id);
-        $data['sprinttask'] = $tasks->getSprintTasks($data['sprint']['id']);
+        $data['sprinttask'] = $tasks->getTasksSprint($data['sprint']['id']);
     
         $data['title'] = "ScrumTeam Details";
 

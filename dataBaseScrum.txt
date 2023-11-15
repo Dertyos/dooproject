@@ -13,7 +13,7 @@ CREATE TABLE Backlog (
   name VARCHAR(255),
   description VARCHAR(255),
   scrumTeamId INT NOT NULL,
-  FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id),
+  FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id) ON DELETE CASCADE,
   PRIMARY KEY (id)
 );
 
@@ -26,7 +26,7 @@ CREATE TABLE Sprint (
   endDate DATE NOT NULL,
   PRIMARY KEY (id),
   scrumTeamId INT NOT NULL,
-  FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id)
+  FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id) ON DELETE CASCADE
 );
 
 -- Tabla Devs
@@ -36,10 +36,10 @@ CREATE TABLE Developer (
     email VARCHAR(255) NOT NULL,
     phone VARCHAR(10) NOT NULL,
     rol ENUM('Developer', 'ScrumMaster', 'ProductOwner') NOT NULL,
-    scrumTeamId INT NOT NULL,
+    scrumTeamId INT,  
     documentNumber VARCHAR(10) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id)
+    FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id) ON DELETE SET NULL
 );
 
 -- Tabla Task
@@ -54,12 +54,35 @@ CREATE TABLE Task (
     sprintId INT,
     developerId INT,
     scrumTeamId INT NOT NULL,
-    FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id),
+    FOREIGN KEY (scrumTeamId) REFERENCES ScrumTeam (id) ON DELETE CASCADE,
     FOREIGN KEY (backlogId) REFERENCES Backlog (id),
-    FOREIGN KEY (sprintId) REFERENCES Sprint (id),
-    FOREIGN KEY (developerId) REFERENCES Developer (id)
+    FOREIGN KEY (sprintId) REFERENCES Sprint (id) ON DELETE CASCADE,
+    FOREIGN KEY (developerId) REFERENCES Developer (id) ON DELETE SET NULL
 );
 
 ALTER TABLE Task
 ADD CONSTRAINT task_backlog_or_sprint_fk
 CHECK (backlogId IS NOT NULL OR sprintId IS NOT NULL);
+
+-- Insertando equipos Scrum
+INSERT INTO ScrumTeam (name, description) VALUES ('Equipo Alfa', 'Primer equipo de desarrollo');
+INSERT INTO ScrumTeam (name, description) VALUES ('Equipo Beta', 'Segundo equipo de desarrollo');
+
+-- Insertando backlogs (uno por equipo)
+INSERT INTO Backlog (name, description, scrumTeamId) VALUES ('Backlog Alfa', 'Backlog para Equipo Alfa', 1);
+INSERT INTO Backlog (name, description, scrumTeamId) VALUES ('Backlog Beta', 'Backlog para Equipo Beta', 2);
+
+-- Insertando sprints
+INSERT INTO Sprint (name, description, startDate, endDate, scrumTeamId) VALUES ('Sprint 1', 'Primer sprint del Equipo Alfa', '2023-01-01', '2023-01-15', 1);
+INSERT INTO Sprint (name, description, startDate, endDate, scrumTeamId) VALUES ('Sprint 2', 'Segundo sprint del Equipo Alfa', '2023-01-16', '2023-01-31', 1);
+INSERT INTO Sprint (name, description, startDate, endDate, scrumTeamId) VALUES ('Sprint 1', 'Primer sprint del Equipo Beta', '2023-01-01', '2023-01-15', 2);
+
+-- Insertando desarrolladores
+INSERT INTO Developer (name, email, phone, rol, scrumTeamId, documentNumber, password) VALUES ('Juan Perez', 'juan@example.com', '1234567890', 'Developer', 1, '123456789', 'password123');
+INSERT INTO Developer (name, email, phone, rol, scrumTeamId, documentNumber, password) VALUES ('Ana García', 'ana@example.com', '0987654321', 'ScrumMaster', 1, '987654321', 'password456');
+INSERT INTO Developer (name, email, phone, rol, scrumTeamId, documentNumber, password) VALUES ('Luis Rodríguez', 'luis@example.com', '1122334455', 'ProductOwner', 2, '112233445', 'password789');
+
+-- Insertando tareas
+INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 1', 'Descripción de la Tarea 1', 1, 5, 'pending', 1, NULL, 1, 1);
+INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 2', 'Descripción de la Tarea 2', 2, 3, 'in_progress', 1, 1, 1, 1);
+INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 3', 'Descripción de la Tarea 3', 3, 8, 'completed', 2, 2, 2, 2);
