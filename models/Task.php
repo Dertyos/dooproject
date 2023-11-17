@@ -24,12 +24,9 @@ class Task {
     }
 
     public function insert($name, $description, $priority, $estimatedTime, $status, $backlogId, $sprintId, $developerId, $scrumTeamId ) {
-        $backlogIdValue = is_null($backlogId) ? 'NULL' : "'$backlogId'";
-        $sprintIdValue = is_null($sprintId) ? 'NULL' : "'$sprintId'";
-        $developerIdValue = is_null($developerId) ? 'NULL' : "'$developerId'";
     
         $sql = "INSERT INTO task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId)
-                VALUES ('$name', '$description', '$priority', $estimatedTime, '$status', $backlogIdValue, $sprintIdValue, $developerIdValue, $scrumTeamId)";
+                VALUES ('$name', '$description', '$priority', $estimatedTime, '$status', $backlogId, $sprintId, $developerId, $scrumTeamId)";
     
         $this->db->query($sql);
     }
@@ -77,7 +74,7 @@ class Task {
 
     public function update($id, $name, $description, $priority, $estimatedTime, $status, $backlogId, $sprintId, $developerId, $scrumTeamId) {
         $sql = "UPDATE task
-                SET name = '$name', description = '$description', priority = $priority, estimatedTime = $estimatedTime, status = '$status', backlogId = $backlogId, sprintId = $sprintId, developerId = $developerId, scrumTeamId = $scrumTeamId
+                SET name = '$name', description = '$description', priority = '$priority', estimatedTime = $estimatedTime, status = '$status', backlogId = $backlogId, sprintId = $sprintId, developerId = $developerId, scrumTeamId = $scrumTeamId
                 WHERE id = $id";
 
         $this->db->query($sql);
@@ -118,10 +115,19 @@ class Task {
     }
 
     public function sprintTET($sprintId){
-        $sql = "SELECT SUM(estimatedTime) AS totalEstimatedTime FROM task WHERE sprintId = $sprintId AND status = 'pending'";
+        $sql = "SELECT estimatedTime FROM task WHERE sprintId = $sprintId AND status = 'pending'";
         $consult = $this->db->query($sql);
-        $totalEstimatedTime = $consult->fetch_assoc();
-        return $totalEstimatedTime['totalEstimatedTime'];
+    
+        if ($consult) {
+            $totalEstimatedTime = 0;
+            while ($task = $consult->fetch_assoc()) {
+                $totalEstimatedTime += (int)$task['estimatedTime'];
+            }
+            return $totalEstimatedTime;
+        } else {
+            // Manejar el error de consulta aquí
+            return 0;
+        }
     }
     
     public function scrumTeamTET($scrumTeamId){

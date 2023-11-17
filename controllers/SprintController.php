@@ -34,7 +34,7 @@ class SprintController
         $scrumTeam = new ScrumTeam();
         $data['scrumTeams'] = $scrumTeam->list();
         $data['title'] = "Create Sprint";
-        
+
         require_once "views/sprint/insert.php";
     }
 
@@ -85,13 +85,13 @@ class SprintController
         $this->index();
     }
 
-    public function view($id) {
+    public function view($id)
+    {
         $sprint = new Sprint();
         $tasks = new Task();
-        $scrumTeam  = new ScrumTeam();
+        $scrumTeam = new ScrumTeam();
         $developers = new Developer();
 
-        
         $data['developers'] = $developers->list();
         $data['sprint'] = $sprint->getSprintById($id);
         $data['scrumTeam'] = $scrumTeam->getScrumTeam($data['sprint']['scrumTeamId']);
@@ -102,12 +102,22 @@ class SprintController
         }
         $data['title'] = "Sprint Details";
 
-        $data['tasksTime'] = $tasks->sprintTET($id);
+        // Cálculo para el gráfico burndown
+        $taskTime = 0;
+        if (isset($sprintTasks) && is_array($sprintTasks)) {
+            foreach ($sprintTasks as $task) {
+                if ($task['status'] != "completed") {
+                    $taskTime += $task['estimatedTime'];
+                }
+            }
+        }
+        $task = new Task();
+        $data['taskTime'] = $taskTime;
         $data['sprintDuration'] = $sprint->sprintDuration($id);
         
-    
         require_once "views/sprint/view.php";
     }
+
 
     public function updateAction()
     {
@@ -116,30 +126,32 @@ class SprintController
         $sprint = new Sprint();
 
         switch ($action) {
-            case 'updateStartDate': $startDate = $_POST['startDate'];
+            case 'updateStartDate':
+                $startDate = $_POST['startDate'];
                 $sprint->updateStartDate($id, $startDate);
                 break;
-            case 'updateEndDate': $endDate = $_POST['endDate'];
+            case 'updateEndDate':
+                $endDate = $_POST['endDate'];
                 $sprint->updateEndDate($id, $endDate);
                 break;
             case 'updateDescription':
                 $description = $_POST['description'];
                 $sprint->updateDescription($id, $description);
-                break;    
+                break;
         }
 
         header('Location: index.php?controller=task&action=index');
-        exit; 
+        exit;
     }
 }
-    // public function moveTask($taskId, $sprintId)
-    // {
-    //     // Lógica para mover una tarea de un sprint a otro
-    //     $sprintModel = new Sprint();
-    //     $sprintModel->moveTaskToSprint($taskId, $sprintId);
+// public function moveTask($taskId, $sprintId)
+// {
+//     // Lógica para mover una tarea de un sprint a otro
+//     $sprintModel = new Sprint();
+//     $sprintModel->moveTaskToSprint($taskId, $sprintId);
 
-    //     // Después de mover la tarea, podrías redirigir a la vista del sprint actualizado
-    //     $this->index();
-    // }
+//     // Después de mover la tarea, podrías redirigir a la vista del sprint actualizado
+//     $this->index();
+// }
 
 

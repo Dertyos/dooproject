@@ -89,7 +89,7 @@
         <?php endif; ?>
 
         
-        <input type="hidden" class="form-control" id="backlogId" name="backlogId" value="<?= isset($data['backlogId']) ? $data['backlogId'] : '' ?>" required>
+        <input type="hidden" class="form-control" id="backlogId" name="backlogId" value="<?= isset($data['backlogId']) ? $data['backlogId'] : null ?>" required>
 
         <button type="submit" class="btn btn-primary">Create Task</button>
     </form>

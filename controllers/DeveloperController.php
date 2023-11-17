@@ -159,7 +159,7 @@ class DeveloperController
 
         $data['developer'] = $developer->getDeveloperById($id);
         $data['developerTasks'] = $tasks->getDeveloperTasks($id);
-        $data['timeNeeded'] = $tasks->calculateTotalEstimatedTime($data['developerTasks']);
+        // $data['timeNeeded'] = $tasks->calculateTotalEstimatedTime($data['developerTasks']);
         $data['title'] = "Developer Details";
 
         require_once "views/devs/view.php";

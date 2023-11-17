@@ -1,17 +1,20 @@
 <?php
 
-class ScrumTeamController {
+class ScrumTeamController
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         require_once 'models/ScrumTeam.php';
         require_once 'models/Sprint.php';
         require_once 'models/Task.php';
         require_once 'models/Backlog.php';
     }
 
-    public function index() {
+    public function index()
+    {
         session_status() == PHP_SESSION_NONE ? session_start() : null;
-        if(isset($_SESSION['documentNumber'])) {
+        if (isset($_SESSION['documentNumber'])) {
             $scrumTeam = new ScrumTeam();
             $data['scrumTeams'] = $scrumTeam->list();
             $data['title'] = "ScrumTeam";
@@ -27,23 +30,25 @@ class ScrumTeamController {
     }
 
     // Mostrar la vista para crear un nuevo registro (ScrumTeam)
-    public function insert() {
+    public function insert()
+    {
         $data['title'] = "Create ScrumTeam";
         // Cargar la vista
         require_once "views/scrumTeams/insert.php";
     }
 
     // Guardar el registo
-    public function store() {
+    public function store()
+    {
         // Recibir los datos del formulario
         $name = $_POST['name'];
         $description = $_POST['description'];
         $workTime = $_POST['workTime'];
-    
+
         // Guardando el registro del ScrumTeam
         $scrumTeam = new ScrumTeam();
         $scrumTeamId = $scrumTeam->insert($name, $description, $workTime);
-    
+
         // Comprobar si el ScrumTeam se ha creado correctamente y obtener el ID
         if ($scrumTeamId) {
             // Crear un Backlog asociado al ScrumTeam
@@ -62,35 +67,52 @@ class ScrumTeamController {
     }
 
     // Visualizar la información de un registro
-    public function view($id) {
+    public function view($id)
+    {
         $scrumTeam = new ScrumTeam();
-        $sprint = new Sprint();
+        $sprintModel = new Sprint();
+        $tasks = new Task();
         $data['scrumTeam'] = $scrumTeam->getScrumTeam($id);
-        $data['sprints'] = $sprint->list();
+        $data['sprints'] = $sprintModel->list();
         $data['scrumTeamSprints'] = [];
+        $data['sprintTasks'] = []; // Inicializa sprintTasks como un array vacío.
 
         foreach ($data['sprints'] as $sprint) {
             if ($sprint['scrumTeamId'] == $data['scrumTeam']['id']) {
                 $data['scrumTeamSprints'][] = $sprint;
+                // Aquí, asignamos las tareas al sprint correspondiente.
+                $data['sprintTasks'][$sprint['id']] = $tasks->getTasksSprint($sprint['id']);
+
+                // Luego calculamos el tiempo de las tareas y los datos del gráfico burndown.
+                $taskTime = 0;
+                foreach ($data['sprintTasks'][$sprint['id']] as $task) {
+                    if ($task['status'] == 'pending') {
+                        $taskTime += $task['estimatedTime'];
+                    }
+                }
+
+                $data['taskTime'][$sprint['id']] = $taskTime;
+                $sprintDuration = $sprintModel->sprintDuration($sprint['id']);
+                $sprintData = [];
+                for ($day = 0; $day <= $sprintDuration; $day++) {
+                    $timeRemaining = $taskTime - ($taskTime / $sprintDuration) * $day;
+                    $sprintData[] = max($timeRemaining, 0);
+                }
+                $data['burndownChartData'][$sprint['id']] = $sprintData;
             }
         }
 
         $backlog = new Backlog();
-        $tasks = new Task();
-        $data['scrumTeamTET'] = $tasks->scrumTeamTET($data['scrumTeam']['id']);
         $data['backlog'] = $backlog->getBacklog($id);
         $data['backlogtask'] = $tasks->getBacklogTasks($data['backlog']['id']);
 
-        foreach ($data['sprints'] as $sprint) {
-            $data['sprintTasks'][$sprint['id']] = $tasks->getTasksSprint($sprint['id']);
-        }
         $data['title'] = "ScrumTeam Details";
-
         require_once "views/scrumTeams/view.php";
     }
 
     // Mostrar la vista para actualizar un registro (scrumTeam)
-    public function edit($id) {
+    public function edit($id)
+    {
         $scrumTeam = new ScrumTeam();
         $data['id'] = $id;
         $data['scrumTeam'] = $scrumTeam->getScrumTeam($id);
@@ -99,24 +121,28 @@ class ScrumTeamController {
     }
 
     // Actualizar el registro
-    public function update() {
+    public function update()
+    {
         $id = $_POST['id'];
         $name = $_POST['name'];
         $description = $_POST['description'];
+        $workTime = $_POST['workTime'];
 
         $scrumTeam = new ScrumTeam();
-        $scrumTeam->update($id, $name, $description);
+        $scrumTeam->update($id, $name, $description, $workTime);
         $this->index();
     }
 
     // Elimina un scrumTeam
-    public function delete($id) {
+    public function delete($id)
+    {
         $scrumTeam = new ScrumTeam();
         $scrumTeam->delete($id);
         $this->index();
     }
 
-    public function getTasksBacklog($id) {
+    public function getTasksBacklog($id)
+    {
         $backlog = new Backlog();
         $tasks = new Task();
         $data['backlog'] = $backlog->getBacklog($id);
@@ -124,10 +150,11 @@ class ScrumTeamController {
         return $data;
     }
 
-    public function getTasksSprint($id) {
+    public function getTasksSprint($id)
+    {
         $sprint = new Sprint();
         $tasks = new Task();
-        $data['sprint'] = $sprint->getSprint($id);
+        $data['sprint'] = $sprint->getSprintById($id);
         $data['task'] = $tasks->getTasksSprint($data['sprint']['id']);
         return $data;
     }

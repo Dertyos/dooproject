@@ -130,7 +130,7 @@ class TaskController
         $priority = $_POST['priority'];
         $estimatedTime = $_POST['estimatedTime'];
         $status = $_POST['status'];
-        $backlogId = $_POST['backlogId'];
+        $backlogId = $_POST['backlogId'] == null ? $_POST['scrumTeamId'] : $_POST['backlogId'];
         $sprintId = $_POST['sprintId'];
         $developerId = $_POST['developerId'];
         $scrumTeamId = $_POST['scrumTeamId'];
