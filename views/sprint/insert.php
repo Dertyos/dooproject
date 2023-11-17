@@ -22,6 +22,21 @@
                 <input type="date" class="form-control" name="endDate" placeholder="End Date" required>
                 <label for="endDate">End Date</label>
             </div>
+            <?php if (isset($data['scrumTeamId'])): ?>
+            <input type="hidden" class="form-control" id="scrumTeamId" name="scrumTeamId"
+                value="<?= $data['scrumTeamId'] ?>" required>
+        <?php else: ?>
+            <div class="form-group-floating mb-3">
+                <label for="scrumTeamId">Assign Scrum Team:</label>
+                <select class="form-control" id="scrumTeamId" name="scrumTeamId">
+                    <?php foreach ($data['scrumTeams'] as $scrumTeam): ?>
+                        <option value="<?= $scrumTeam['id']; ?>">
+                            <?= $scrumTeam['name']; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        <?php endif; ?>
             <button type="submit" class="btn btn-primary">Create Sprint</button>
         </form>
     </div>

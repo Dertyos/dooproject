@@ -46,6 +46,16 @@ class Developer {
         $devObject = $consult->fetch_assoc();
         return $devObject;
     }
+
+    public function getScrumTeamDevelopers($scrumTeamId) {
+        $sql = "SELECT * FROM developer WHERE scrumTeamId = '$scrumTeamId'";
+        $consult = $this->db->query($sql);
+        $developers = [];
+        while ($row = $consult->fetch_assoc()) {
+            $developers[] = $row;
+        }
+        return $developers;
+    }
     
 
 

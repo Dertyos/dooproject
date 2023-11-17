@@ -11,23 +11,24 @@ class ScrumTeam {
     }
 
     public function list() {
-        // $sql = "SELECT * FROM scrum_team";
         $sql = "SELECT * FROM scrumteam";
-        if (!$resultado = $this->db->query($sql)) {
-            // echo "Lo sentimos, este sitio web está experimentando problemas.";
-            echo "We are sorry, this website is experiencing problems.";
+        if (!$result = $this->db->query($sql)) {
+
+            echo "We are sorry, this website is havingproblems.";
         }
 
-        while ($fila = $resultado->fetch_assoc()) {
-            $this->scrumTeams[] = $fila;
+        while ($row = $result->fetch_assoc()) {
+            $this->scrumTeams[] = $row;
         }
 
         return $this->scrumTeams;
     }
 
-    public function insert($name, $description) {
-        $sql = "INSERT INTO scrumteam(name, description) VALUES('$name', '$description')";
+    public function insert($name, $description, $workTime) {
+        $sql = "INSERT INTO scrumteam(name, description, workTime) VALUES('$name', '$description', '$workTime')";
         $this->db->query($sql);
+        $scrumTeamId = $this->db->insert_id;
+        return $this->getScrumTeam($scrumTeamId);
     }
 
     public function getScrumTeam($id) {
@@ -37,8 +38,8 @@ class ScrumTeam {
         return $register;
     }
 
-    public function update($id, $name, $description) {
-        $sql = "UPDATE scrumteam SET name = '$name', description = '$description' WHERE id = $id";
+    public function update($id, $name, $description, $workTime) {
+        $sql = "UPDATE scrumteam SET name = '$name', description = '$description', workTime = '$workTime' WHERE id = $id";
         $this->db->query($sql);
     }
 

@@ -1,57 +1,105 @@
-<?php include_once "views/shared/Header.php" ?>
+<?php require "views/shared/header.php"; ?>
+<link rel="stylesheet" href="assets/task.css">
 
-<h1 class="text-center"><?= $data['title'] ?></h1>
+<div class="container my-5">
+    <h1 class="text-center">
+        <?= $data['title'] ?>
+    </h1>
 
-<div class="container text-center">
-    <div class="form-signin">
-        <form action="index.php?controller=task&action=store" method="post">
-            <div class="form-floating mb-3">
-                <input type="text" class="form-control" name="name" placeholder="Task Name">
-                <label for="name">Task Name</label>
-            </div>
-            <div class="form-floating mb-3">
-                <textarea class="form-control" name="description" placeholder="Task Description"></textarea>
-                <label for="description">Description</label>
-            </div>
-            <div class="form-floating mb-3">
-                <select class="form-select" name="priority" aria-label="Priority">
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
+    <form action="index.php?controller=task&action=store" method="post" class="my-4">
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea class="form-control" id="description" name="description" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="estimatedTime">Estimated Time:</label>
+            <input type="number" class="form-control" id="estimatedTime" name="estimatedTime" required>
+        </div>
+
+        <div class="form-group">
+            <label for="priority">Priority:</label>
+            <select class="form-control" id="priority" name="priority" required>
+                <option value="stat">Stat</option>
+                <option value="high">High</option>
+                <option value="normal">Normal</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="status">Status:</label>
+            <select class="form-control" id="status" name="status" required>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+
+        <?php if (isset($data['scrumTeamId'])): ?>
+            <input type="hidden" class="form-control" id="scrumTeamId" name="scrumTeamId"
+                value="<?= $data['scrumTeamId'] ?>" required>
+        <?php else: ?>
+            <div class="form-group">
+                <label for="scrumTeam">Assign Scrum Team:</label>
+                <select class="form-control" id="scrumTeamId" name="scrumTeamId">
+                    <?php foreach ($data['scrumTeams'] as $scrumTeam): ?>
+                        <option value="<?= $scrumTeam['id']; ?>">
+                            <?= $scrumTeam['name']; ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
-                <label for="priority">Priority</label>
             </div>
-            <div class="form-floating mb-3">
-                <input type="number" class="form-control" name="estimatedTime" placeholder="Estimated Time">
-                <label for="estimatedTime">Estimated Time</label>
-            </div>
-            <div class="form-floating mb-3">
-                <select class="form-select" name="status" aria-label="Status">
-                    <option value="Not Started">Not Started</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
+        <?php endif; ?>
+
+        <?php if (isset($data['sprintId'])): ?>
+            <input type="hidden" class="form-control" id="sprintId" name="sprintId" value="<?= $data['sprintId'] ?>"
+                required>
+        <?php else: ?>
+            <div class="form-group">
+                <label for="sprint">Assign Sprint:</label>
+                <select class="form-control" id="sprintId" name="sprintId">
+                    <?php foreach ((isset($data['sprintsList']) ? $data['sprintsList'] : $data['sprints']) as $sprint): ?>
+                        <option value="<?= $sprint['id']; ?>">
+                            <?= $sprint['name']; ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
-                <label for="status">Status</label>
             </div>
-            <div class="form-floating mb-3">
-                <select class="form-select" id="scrumTeamId" name="scrumTeamId" aria-label="Floating label select example">
-                    <?php foreach($data['scrumTeams'] as $item) { ?>
-                        <option value="<?= $item['id'] ?>"><?= $item['name'] ?></option>
-                    <?php } ?>
+        <?php endif; ?>
+
+        <?php if (isset($data['developerId'])): ?>
+            <input type="hidden" class="form-control" id="developerId" name="developerId"
+                value="<?= $data['developerId'] ?>" required>
+        <?php else: ?>
+            <div class="form-group">
+                <label for="developer">Assign Developer:</label>
+                <select class="form-control" id="developerId" name="developerId">
+                    <?php foreach ((isset($data['developersList']) ? $data['developersList'] : $data['developers']) as $developer): ?>
+                        <option value="<?= $developer['id']; ?>">
+                            <?= $developer['name']; ?>
+                        </option>
+                    <?php endforeach; ?>
                 </select>
-                <label for="floatingSelect">Assign your Scrum Team</label>
             </div>
-            <div class="form-floating mb-3">
-                <select class="form-select" id="developerId" name="developerId" aria-label="Floating label select example">
-                    <?php foreach($data['scrumTeams'] as $item) { ?>
-                        <option value="<?= $item['id'] ?>"><?= $item['name'] ?></option>
-                    <?php } ?>
-                </select>
-                <label for="floatingSelect">Assign your Scrum Team</label>
-            </div>
-            <button type="submit" class="btn btn-primary">Create Task</button>
-        </form>
-    </div>
+        <?php endif; ?>
+
+        
+        <input type="hidden" class="form-control" id="backlogId" name="backlogId" value="<?= isset($data['backlogId']) ? $data['backlogId'] : '' ?>" required>
+
+        <button type="submit" class="btn btn-primary">Create Task</button>
+    </form>
 </div>
 
-<?php include_once "views/shared/footer.php" ?>
+<script>
+    document.getElementById('scrumTeam').addEventListener('change', function() {
+        document.getElementById('backlogId').value = this.value;
+        
+    });
+</script>
+
+<?php require "views/shared/footer.php"; ?>

@@ -4,7 +4,8 @@ USE scrum;
 CREATE TABLE ScrumTeam (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL, 
-    description VARCHAR(255)	
+    description VARCHAR(255),
+    workPerDay INT CHECK (workPerDay >= 0 AND workPerDay <= 24)	
 );
 
 -- Tabla Backlog
@@ -47,7 +48,7 @@ CREATE TABLE Task (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
-    priority INT NOT NULL,
+    priority ENUM('stat', 'high', 'normal') NOT NULL,
     estimatedTime INT NOT NULL,
     status ENUM('pending', 'in_progress', 'completed') NOT NULL,
     backlogId INT,
@@ -60,9 +61,6 @@ CREATE TABLE Task (
     FOREIGN KEY (developerId) REFERENCES Developer (id) ON DELETE SET NULL
 );
 
-ALTER TABLE Task
-ADD CONSTRAINT task_backlog_or_sprint_fk
-CHECK (backlogId IS NOT NULL OR sprintId IS NOT NULL);
 ALTER TABLE Backlog
 ADD UNIQUE (scrumTeamId);
 
@@ -85,6 +83,8 @@ INSERT INTO Developer (name, email, phone, rol, scrumTeamId, documentNumber, pas
 INSERT INTO Developer (name, email, phone, rol, scrumTeamId, documentNumber, password) VALUES ('Luis Rodríguez', 'luis@example.com', '1122334455', 'ProductOwner', 2, '112233445', 'password789');
 
 -- Insertando tareas
-INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 1', 'Descripción de la Tarea 1', 1, 5, 'pending', 1, NULL, 1, 1);
-INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 2', 'Descripción de la Tarea 2', 2, 3, 'in_progress', 1, 1, 1, 1);
-INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 3', 'Descripción de la Tarea 3', 3, 8, 'completed', 2, 2, 2, 2);
+INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 1', 'Descripción de la Tarea 1', 'stat', 5, 'pending', 1, NULL, 1, 1);
+INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 2', 'Descripción de la Tarea 2', 'high', 3, 'in_progress', 1, 1, 1, 1);
+INSERT INTO Task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId) VALUES ('Tarea 3', 'Descripción de la Tarea 3', 'normal', 8, 'completed', 2, 2, 2, 2);
+
+

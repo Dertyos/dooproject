@@ -11,7 +11,7 @@ class Task {
     }
 
     public function list() {
-        $sql = "SELECT * FROM task";
+        $sql = "SELECT * FROM task ORDER BY FIELD(priority, 'stat', 'high', 'normal')";
         if (!$result = $this->db->query($sql)) {
             echo "Sorry, this website is experiencing problems.";
         }
@@ -23,10 +23,14 @@ class Task {
         return $this->tasks;
     }
 
-    public function insert($name, $description, $priority, $estimated, $status, $backlogId, $sprintId, $developerId) {
-        $sql = "INSERT INTO task(name, description, priority, estimated, status, backlogId, sprintId, developerId)
-                VALUES('$name', '$description', $priority, $estimated, '$status', $backlogId, $sprintId, $developerId)";
-
+    public function insert($name, $description, $priority, $estimatedTime, $status, $backlogId, $sprintId, $developerId, $scrumTeamId ) {
+        $backlogIdValue = is_null($backlogId) ? 'NULL' : "'$backlogId'";
+        $sprintIdValue = is_null($sprintId) ? 'NULL' : "'$sprintId'";
+        $developerIdValue = is_null($developerId) ? 'NULL' : "'$developerId'";
+    
+        $sql = "INSERT INTO task (name, description, priority, estimatedTime, status, backlogId, sprintId, developerId, scrumTeamId)
+                VALUES ('$name', '$description', '$priority', $estimatedTime, '$status', $backlogIdValue, $sprintIdValue, $developerIdValue, $scrumTeamId)";
+    
         $this->db->query($sql);
     }
 
@@ -34,8 +38,11 @@ class Task {
         $sql = "SELECT * FROM task
                 WHERE backlogId = '$backlogId'";
         $consult = $this->db->query($sql);
-        $devObject = $consult->fetch_assoc();
-        return $devObject;
+        $tasks = [];
+        while ($row = $consult->fetch_assoc()) {
+            $tasks[] = $row;
+        }
+        return $tasks;
     }
 
     public function getDeveloperTasks($developerId) {
@@ -53,15 +60,53 @@ class Task {
         $sql = "SELECT * FROM task
                 WHERE sprintId = '$sprintId'";
         $consult = $this->db->query($sql);
+        $tasks = [];
+        while ($row = $consult->fetch_assoc()) {
+            $tasks[] = $row;
+        }
+        return $tasks;
+    }
+
+    public function getTask($id) {
+        $sql = "SELECT * FROM task
+                WHERE id = '$id'";
+        $consult = $this->db->query($sql);
         $devObject = $consult->fetch_assoc();
         return $devObject;
     }
 
-    public function update($id, $name, $description, $priority, $estimated, $status, $backlogId, $sprintId, $developerId) {
+    public function update($id, $name, $description, $priority, $estimatedTime, $status, $backlogId, $sprintId, $developerId, $scrumTeamId) {
         $sql = "UPDATE task
-                SET name = '$name', description = '$description', priority = $priority, estimated = $estimated, status = '$status', backlogId = $backlogId, sprintId = $sprintId, developerId = $developerId
+                SET name = '$name', description = '$description', priority = $priority, estimatedTime = $estimatedTime, status = '$status', backlogId = $backlogId, sprintId = $sprintId, developerId = $developerId, scrumTeamId = $scrumTeamId
                 WHERE id = $id";
 
+        $this->db->query($sql);
+    }
+
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE task
+                SET status = '$status'
+                WHERE id = $id";
+        $this->db->query($sql);
+    }
+
+    public function updatePriority($id, $priority) {
+        $sql = "UPDATE task
+                SET priority = '$priority'
+                WHERE id = $id";
+        $this->db->query($sql);
+    }
+    public function updateEstimatedTime($id, $estimatedTime) {
+        $sql = "UPDATE task
+                SET estimatedTime = '$estimatedTime'
+                WHERE id = $id";
+        $this->db->query($sql);
+    }
+
+    public function updateDeveloper($id, $developerId){
+        $sql = "UPDATE task
+                SET developerId = '$developerId'
+                WHERE id = $id";
         $this->db->query($sql);
     }
 
@@ -70,6 +115,33 @@ class Task {
                 WHERE id = $id";
 
         $this->db->query($sql);
+    }
+
+    public function sprintTET($sprintId){
+        $sql = "SELECT SUM(estimatedTime) AS totalEstimatedTime FROM task WHERE sprintId = $sprintId AND status = 'pending'";
+        $consult = $this->db->query($sql);
+        $totalEstimatedTime = $consult->fetch_assoc();
+        return $totalEstimatedTime['totalEstimatedTime'];
+    }
+    
+    public function scrumTeamTET($scrumTeamId){
+        $sql = "SELECT SUM(estimatedTime) AS totalEstimatedTime FROM task WHERE scrumTeamId = $scrumTeamId AND status = 'pending'";
+        $consult = $this->db->query($sql);
+        $totalEstimatedTime = $consult->fetch_assoc();
+        return $totalEstimatedTime;
+    }
+
+    public function developerTET($developerId){
+        $sql = "SELECT SUM(estimatedTime) AS totalEstimatedTime FROM task WHERE developerId = $developerId AND status = 'pending'";
+        $consult = $this->db->query($sql);
+        $totalEstimatedTime = $consult->fetch_assoc();
+        return $totalEstimatedTime;
+    }
+    public function backlogTET($backlogId){
+        $sql = "SELECT SUM(estimatedTime) AS totalEstimatedTime FROM task WHERE backlogId = $backlogId AND status = 'pending'";
+        $consult = $this->db->query($sql);
+        $totalEstimatedTime = $consult->fetch_assoc();
+        return $totalEstimatedTime;
     }
 
 }

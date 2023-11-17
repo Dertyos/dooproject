@@ -10,16 +10,19 @@ class ScrumTeamController {
     }
 
     public function index() {
-
-        // if(isset($_SESSION['documentNumber'])) {
+        session_status() == PHP_SESSION_NONE ? session_start() : null;
+        if(isset($_SESSION['documentNumber'])) {
             $scrumTeam = new ScrumTeam();
             $data['scrumTeams'] = $scrumTeam->list();
             $data['title'] = "ScrumTeam";
-            // Cargar la vista
+
             require_once "views/scrumTeams/index.php";
-        // } else {
-        //     echo "<p>You do not have access</p>";
-        // }
+            exit;
+        } else {
+            $_SESSION['error'] = 'You do not have access. Please log in.';
+            header('Location: index.php?controller=audeveloperth&action=login');
+            exit;
+        }
 
     }
 
@@ -32,18 +35,30 @@ class ScrumTeamController {
 
     // Guardar el registo
     public function store() {
-
         // Recibir los datos del formulario
         $name = $_POST['name'];
         $description = $_POST['description'];
-
-        // Guardando el registro
+        $workTime = $_POST['workTime'];
+    
+        // Guardando el registro del ScrumTeam
         $scrumTeam = new ScrumTeam();
-        $scrumTeam->insert($name, $description);
+        $scrumTeamId = $scrumTeam->insert($name, $description, $workTime);
+    
+        // Comprobar si el ScrumTeam se ha creado correctamente y obtener el ID
+        if ($scrumTeamId) {
+            // Crear un Backlog asociado al ScrumTeam
+            $backlog = new Backlog();
+            $backlogInserted = $backlog->insert($scrumTeamId);
+            if (!$backlogInserted) {
+                // Manejar el error al insertar el Backlog
+                $_SESSION['error'] = 'There was an error creating the backlog.';
+            }
+        } else {
+            // Manejar el error al insertar el ScrumTeam
+            $_SESSION['error'] = 'There was an error creating the ScrumTeam.';
+        }
 
-        // Enviar a la vista del index
         $this->index();
-
     }
 
     // Visualizar la información de un registro
@@ -51,10 +66,18 @@ class ScrumTeamController {
         $scrumTeam = new ScrumTeam();
         $sprint = new Sprint();
         $data['scrumTeam'] = $scrumTeam->getScrumTeam($id);
-        $data['sprints'] = $sprint->list($id);
+        $data['sprints'] = $sprint->list();
+        $data['scrumTeamSprints'] = [];
+
+        foreach ($data['sprints'] as $sprint) {
+            if ($sprint['scrumTeamId'] == $data['scrumTeam']['id']) {
+                $data['scrumTeamSprints'][] = $sprint;
+            }
+        }
 
         $backlog = new Backlog();
         $tasks = new Task();
+        $data['scrumTeamTET'] = $tasks->scrumTeamTET($data['scrumTeam']['id']);
         $data['backlog'] = $backlog->getBacklog($id);
         $data['backlogtask'] = $tasks->getBacklogTasks($data['backlog']['id']);
 
@@ -105,7 +128,7 @@ class ScrumTeamController {
         $sprint = new Sprint();
         $tasks = new Task();
         $data['sprint'] = $sprint->getSprint($id);
-        $data['task'] = $tasks->getSprintTasks($data['sprint']['id']);
+        $data['task'] = $tasks->getTasksSprint($data['sprint']['id']);
         return $data;
     }
 }

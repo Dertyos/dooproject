@@ -1,63 +1,124 @@
 <?php
 
-class Sprint {
+class Sprint
+{
 
-private $db; // database connection
-private $sprints; // array of sprints
+    private $db; // database connection
+    private $sprints; // array of sprints
 
-public function __construct() {
-    $this->db = connection::connect(); // connect to database
-    $this->sprints = array(); // initialize sprints array
-}
-
-public function list() { // list all sprints
-    $sql = "SELECT * FROM sprint"; // SQL query to select all sprints
-    $resultado = $this->db->query($sql); // execute SQL query
-    if (!$resultado) {
-        echo "Lo sentimos, este sitio web está experimentando problemas.";
-        exit; // exit if SQL query fails
+    public function __construct()
+    {
+        $this->db = connection::connect(); // connect to database
+        $this->sprints = array(); // initialize sprints array
     }
 
-    while ($fila = $resultado->fetch_assoc()) { // iterate over results and add each sprint to the sprints array
-        $this->sprints[] = $fila;
+    public function list()
+    { // list all sprints
+        $sql = "SELECT * FROM sprint"; // SQL query to select all sprints
+        $result = $this->db->query($sql); // execute SQL query
+        if (!$result) {
+            echo "So sorry,This site is having problems.";
+            exit; // exit if SQL query fails
+        }
+
+        while ($row = $result->fetch_assoc()) { // iterate over results and add each sprint to the sprints array
+            $this->sprints[] = $row;
+        }
+
+        return $this->sprints; 
     }
 
-    return $this->sprints; // return the sprints array
-}
+    public function insert($name, $description, $startDate, $endDate, $scrumTeamId)
+    { 
+        $sql = "INSERT INTO sprint(name, description, startDate, endDate, scrumTeamId)
+            VALUES('$name', '$description', '$startDate', '$endDate', '$scrumTeamId')"; 
+        $this->db->query($sql); 
+    }
 
-public function insert($name, $description, $startDate, $endDate) { // insert a new sprint
-    $sql = "INSERT INTO sprint(nombre, descripcion, fechaInicio, fechaFin)
-            VALUES('$name', '$description', '$startDate', '$endDate')"; // SQL query to insert a new sprint
-    $this->db->query($sql); // execute SQL query
-}
-
-public function getSprint($scrumTeamId) {
-    $sql = "SELECT * FROM sprint
+    public function getSprints($scrumTeamId)
+    {
+        $sql = "SELECT * FROM sprint
             WHERE scrumTeamId = '$scrumTeamId'";
-    $consult = $this->db->query($sql);
-    $devObject = $consult->fetch_assoc();
-    return $devObject;
-}
-public function getSprintById($id) {
-    $sql = "SELECT * FROM sprint
+        $result = $this->db->query($sql); 
+        if (!$result) {
+            echo "So sorry,This site is having problems.";
+            exit; 
+        }
+
+        while ($row = $result->fetch_assoc()) { 
+            $this->sprints[] = $row;
+        }
+
+        return $this->sprints; 
+    }
+
+    public function getSprintById($id)
+    {
+        $sql = "SELECT * FROM sprint
             WHERE id = '$id'";
-    $consult = $this->db->query($sql);
-    $devObject = $consult->fetch_assoc();
-    return $devObject;
-}
+        $consult = $this->db->query($sql);
+        $devObject = $consult->fetch_assoc();
+        return $devObject;
+    }
 
-public function update($id, $name, $description, $startDate, $endDate) { // update a specific sprint
-    $sql = "UPDATE sprint
-            SET name = '$name', description = '$description', startDate = '$startDate', endDate = '$endDate'
-            WHERE id = $id"; // SQL query to update a specific sprint
-    $this->db->query($sql); // execute SQL query
-}
+    public function update($id, $name, $description, $startDate, $endDate, $scrumTeamId)
+    { 
+        $sql = "UPDATE sprint
+            SET name = '$name', description = '$description', startDate = '$startDate', endDate = '$endDate', scrumTeamId = '$scrumTeamId'
+            WHERE id = $id"; 
+        $this->db->query($sql); 
+    }
 
-public function delete($id) { // delete a specific sprint by ID
-    $sql = "DELETE FROM sprint
-            WHERE id = $id"; // SQL query to delete a specific sprint by ID
-    $this->db->query($sql); // execute SQL query
-}
+    public function delete($id)
+    { 
+        $sql = "DELETE FROM sprint
+            WHERE id = $id"; 
+        $this->db->query($sql); 
+    }
+
+
+    public function sprintTasks() {
+        $sprints = $this->list();
+        $sprintTasks = array();
+    
+        foreach ($sprints as $sprint) {
+            $sprintId = $sprint['id'];
+            $sql = "SELECT * FROM Task WHERE sprintId = " . $sprintId;
+            $result = $this->db->query($sql);
+            $tasks = $result->fetch_all(MYSQLI_ASSOC);
+    
+            $sprint['tasks'] = $tasks;
+            array_push($sprintTasks, $sprint);
+        }
+    
+        return $sprintTasks;
+    }
+    
+    public function updateStartDate($id, $startDate) {
+        $sql = "UPDATE sprint SET startDate = '$startDate' WHERE id = $id";
+        $this->db->query($sql);
+    }
+    public function updateEndDate($id, $endDate) {
+        $sql = "UPDATE sprint SET endDate = '$endDate' WHERE id = $id";
+        $this->db->query($sql);
+    }
+
+    public function updateDescription($id, $description) {
+        $sql = "UPDATE sprint SET description = '$description' WHERE id = $id";
+        $this->db->query($sql);
+    }
+
+    public function sprintDuration($sprintId){
+        $sql = "SELECT DATEDIFF(endDate, startDate) AS duration FROM Sprint WHERE id = $sprintId";
+        $consult = $this->db->query($sql);
+        if($consult){
+            $duration = $consult->fetch_assoc();
+            return $duration['duration'];
+        } else {
+            // Manejo de error en caso de que la consulta falle
+            return null;
+        }
+    }
 
 }
 ?>

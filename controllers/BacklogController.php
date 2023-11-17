@@ -1,7 +1,7 @@
 <?php
 
 class BacklogController {
-
+    
     public function __construct() {
         require_once "models/Backlog.php";
         require_once "models/ScrumTeam.php";
@@ -12,7 +12,7 @@ class BacklogController {
     public function index() {
 
         $backlog = new Backlog();
-        $data['backlogs'] = $backlog->listar();
+        $data['backlogs'] = $backlog->list();
         $data['titulo'] = "Backlog";
         // Cargar la vista
         require_once "views/Backlog/index.php";
@@ -21,8 +21,9 @@ class BacklogController {
     public function show($scrumTeamId) {
         $backlog = new Backlog();
         $backlog = $backlog->getBacklog($scrumTeamId);
+        $tasks = new Task();
         
-        $tasks = $backlog->getBacklogTasks($scrumTeamId);
+        $tasks = $tasks->getBacklogTasks($backlog['id']);
         
     }
 

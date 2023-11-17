@@ -18,7 +18,7 @@
     <!-- Sección de Tareas Asignadas al Desarrollador -->
     <div class="developer-tasks mt-4">
         <h2 class="text-success">Assigned Tasks</h2>
-        <a href="index.php?controller=task&action=insert&scrumTeamId=<?= $data['developer']['id'] ?>" class="btn btn-primary">Add New Task</a>
+        <a href="index.php?controller=task&action=insert&developerId=<?= $data['developer']['id'] ?>" class="btn btn-primary">Add New Task</a>
         <div class="tasks-box">
             <?php if (!empty($data['developerTasks'])): ?>
                 <?php foreach ($data['developerTasks'] as $task): ?>
